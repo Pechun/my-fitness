@@ -213,17 +213,7 @@ const SCHEDULE = [
     ]
   },
   {
-    title:"星期三・休息 / 活動度",
-    exercises:[
-      {name:"泡棉滾筒放鬆", sets:"1", reps:"10分鐘", weight:"—"},
-      {name:"髖屈肌伸展", sets:"3", reps:"30秒", weight:"—"},
-      {name:"胸椎旋轉", sets:"3", reps:"10下每側", weight:"—"},
-      {name:"腳踝活動度", sets:"3", reps:"10圈", weight:"—"},
-      {name:"貓牛式", sets:"3", reps:"10下", weight:"—"},
-    ]
-  },
-  {
-    title:"星期四・腿（蹲主）",
+    title:"星期三・腿（蹲主）",
     exercises:[
       {name:"背蹲舉", sets:"4", reps:"6下", weight:"82.5 kg"},
       {name:"保加利亞分腿蹲", sets:"3", reps:"10下/腳", weight:"20 kg"},
@@ -234,7 +224,7 @@ const SCHEDULE = [
     ]
   },
   {
-    title:"星期五・肩 / 手臂",
+    title:"星期四・肩 / 手臂",
     exercises:[
       {name:"槓鈴肩推（坐姿）", sets:"4", reps:"8下", weight:"30 kg"},
       {name:"啞鈴側平舉", sets:"4", reps:"12下", weight:"10 kg"},
@@ -245,7 +235,7 @@ const SCHEDULE = [
     ]
   },
   {
-    title:"星期六・腿（鉸鏈）＋核心",
+    title:"星期五・腿（鉸鏈）＋核心",
     exercises:[
       {name:"羅馬尼亞硬舉", sets:"4", reps:"8下", weight:"80 kg"},
       {name:"腿推機（窄距）", sets:"3", reps:"12下", weight:"100 kg"},
@@ -254,6 +244,10 @@ const SCHEDULE = [
       {name:"滾輪捲腹", sets:"3", reps:"10下", weight:"自身體重"},
       {name:"農夫走路", sets:"3", reps:"20公尺", weight:"28 kg"},
     ]
+  },
+  {
+    title:"星期六・休息",
+    exercises:[]
   },
   {
     title:"星期日・休息",
@@ -422,15 +416,19 @@ function renderSchedule(){
   let tabs = SCHEDULE.map((d,i)=>`<button class="tab-btn${i===schedIdx?' on':''}" onclick="switchSched(${i})">${["一","二","三","四","五","六","日"][i]}</button>`).join('');
   let exRows = day.exercises.length===0
     ? `<div class="rest-card"><div class="rest-emoji">🧘</div><div class="rest-text">休息日</div></div>`
-    : day.exercises.map(ex=>`
-      <div class="ex-row" style="cursor:default">
-        <span style="font-size:18px">💪</span>
+    : day.exercises.map((ex,i)=>{
+      const log = getLog();
+      const done = log.exercises[i]?.done;
+      return `
+      <div class="ex-row${done?' done':''}" onclick="toggleEx(${i});renderSchedule()">
+        <div class="ex-check${done?' checked':''}"><span class="check-mark">✓</span></div>
         <div style="flex:1">
           <div class="ex-name">${ex.name}</div>
           <div class="ex-detail">${ex.sets}組 × ${ex.reps}</div>
         </div>
         <div class="ex-weight">${ex.weight}</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
 
   document.getElementById('pg-schedule').innerHTML = `
   <div class="topbar"><div class="topbar-title">課表總覽</div></div>
@@ -497,7 +495,7 @@ function renderInfo(){
     {icon:"🥗",title:"飲食建議",desc:"每日蛋白質 ≥ 140g（體重 × 1.6g）。熱量維持微赤字 200–300 kcal，達到增肌減脂效果。"},
     {icon:"😴",title:"恢復與睡眠",desc:"每晚睡眠 7–9 小時。週三活動度訓練不可省略，有助於減少傷害風險。"},
     {icon:"🔄",title:"課表更新週期",desc:"執行 8 週後重新測試 5RM，回報給 AI 更新訓練重量，持續進步。"},
-    {icon:"📅",title:"本週課表",desc:"一：胸肱三頭｜二：背肱二頭｜三：活動度｜四：腿蹲主｜五：肩手臂｜六：腿鉸鏈＋核心｜日：休息"},
+    {icon:"📅",title:"本週課表",desc:"一：胸肱三頭｜二：背肱二頭｜三：腿蹲主｜四：肩手臂｜五：腿鉸鏈＋核心｜六日：休息"},
   ];
   document.getElementById('pg-info').innerHTML = `
   <div class="topbar"><div class="topbar-title">課表說明</div></div>
