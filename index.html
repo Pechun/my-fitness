@@ -306,6 +306,9 @@ const SCHEDULE = [
   }
 ];
 
+const DAYS_LABEL = ["一","二","三","四","五","六","日"];
+const DB = "fitapp_v5";
+
 const EXERCISE_GUIDE = {
   "槓鈴臥推":{
     steps:["躺在臥推椅上，眼睛對準槓鈴正下方","雙手握距略寬於肩，握槓後深吸一口氣撐緊核心","槓鈴下放至胸口（乳頭位置），手肘約45度角","胸肌發力將槓鈴推回，鎖骨前不要完全鎖死"],
@@ -495,6 +498,7 @@ function ringHTML(pct){
 
 // ── TODAY ──
 function renderToday(){
+  try{
   const now = new Date();
   const h = now.getHours();
   const greet = h<12?"早安 ☀️":h<17?"午安 🌤️":"晚上好 🌙";
@@ -592,6 +596,14 @@ function renderToday(){
       });
       html += `</div>`;
     }
+
+  html += `<div style="height:20px"></div>`;
+  document.getElementById('pg-today').innerHTML = html;
+  }catch(e){
+    document.getElementById('pg-today').innerHTML = `
+    <div class="topbar"><div class="topbar-title">今天</div></div>
+    <div style="padding:24px;text-align:center;color:var(--mut);font-size:13px">載入時發生錯誤，請重新整理頁面</div>`;
+  }
 }
 
 function toggleEx(i){
@@ -691,49 +703,67 @@ function switchSched(i){ schedIdx=i; renderSchedule(); }
 
 // ── STATS ──
 function renderStats(){
-  const todStr = todayStr();
-  const now = new Date(); const dw = now.getDay();
-  const mon = new Date(now); mon.setDate(now.getDate()-(dw===0?6:dw-1));
-  const week = Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d.toISOString().slice(0,10);});
-  let streak=0;
-  for(const k of Object.keys(logs).sort().reverse()){
-    if(Object.values(logs[k].exercises||{}).some(e=>e.done)) streak++;
-    else break;
+  try{
+    const todStr = todayStr();
+    const now = new Date(); const dw = now.getDay();
+    const mon = new Date(now); mon.setDate(now.getDate()-(dw===0?6:dw-1));
+    const week = Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d.toISOString().slice(0,10);});
+
+    let streak=0;
+    const sortedKeys = Object.keys(logs).sort().reverse();
+    for(const k of sortedKeys){
+      const exObj = logs[k]?.exercises||{};
+      if(Object.values(exObj).some(e=>e&&e.done)) streak++;
+      else break;
+    }
+    const weekDone = week.filter(d=>{
+      const exObj = logs[d]?.exercises||{};
+      return Object.values(exObj).some(e=>e&&e.done);
+    }).length;
+    const totalEx = Object.values(logs).reduce((s,l)=>{
+      return s + Object.values(l.exercises||{}).filter(e=>e&&e.done).length;
+    },0);
+
+    const dots = week.map((d,i)=>{
+      const done = Object.values(logs[d]?.exercises||{}).some(e=>e&&e.done);
+      const isToday = d===todStr;
+      const num = parseInt(d.slice(8));
+      let cls = 'wd-dot'; if(done) cls+=' done'; else if(isToday) cls+=' today';
+      return `<div class="week-day"><div class="wd-lbl">${DAYS_LABEL[i]}</div><div class="${cls}">${num}</div></div>`;
+    }).join('');
+
+    const histItems = Object.entries(logs)
+      .sort((a,b)=>b[0].localeCompare(a[0]))
+      .slice(0,20)
+      .map(([d,lg])=>{
+        const exDone = Object.values(lg.exercises||{}).filter(e=>e&&e.done).length;
+        if(exDone===0 && !lg.dayNote) return '';
+        const dt = new Date(d);
+        return `<div class="card" style="margin-top:0">
+          <div class="hist-row">
+            <span style="font-size:14px;font-weight:600">${dt.getMonth()+1}/${dt.getDate()}</span>
+            <span style="font-size:12px;color:${exDone>0?'var(--grn)':'var(--mut)'}">${exDone>0?`✓ ${exDone} 個動作`:'未記錄'}</span>
+          </div>
+          ${lg.dayNote?`<div class="hist-note">${lg.dayNote}</div>`:''}
+        </div>`;
+      }).join('');
+
+    document.getElementById('pg-stats').innerHTML = `
+    <div class="topbar"><div class="topbar-title">訓練紀錄</div></div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-num">${streak}</div><div class="stat-lbl">連續天數 🔥</div></div>
+      <div class="stat-box"><div class="stat-num">${weekDone}</div><div class="stat-lbl">本週完成天</div></div>
+      <div class="stat-box"><div class="stat-num">${totalEx}</div><div class="stat-lbl">累計動作</div></div>
+    </div>
+    <div class="card"><div class="week-grid">${dots}</div></div>
+    <div class="sec-lbl">歷史紀錄</div>
+    ${histItems||`<div style="padding:24px;text-align:center;color:var(--mut);font-size:13px;line-height:1.6">還沒有紀錄<br>開始訓練並打勾完成動作吧！</div>`}
+    <div style="height:20px"></div>`;
+  }catch(e){
+    document.getElementById('pg-stats').innerHTML = `
+    <div class="topbar"><div class="topbar-title">訓練紀錄</div></div>
+    <div style="padding:24px;color:var(--mut);font-size:13px;word-break:break-all">錯誤：${e.message}<br><br>${e.stack||''}</div>`;
   }
-  const weekDone = week.filter(d=>Object.values(logs[d]?.exercises||{}).some(e=>e.done)).length;
-  const totalEx = Object.values(logs).reduce((s,l)=>s+Object.values(l.exercises||{}).filter(e=>e.done).length,0);
-
-  const dots = week.map((d,i)=>{
-    const done = Object.values(logs[d]?.exercises||{}).some(e=>e.done);
-    const isToday = d===todStr;
-    const num = parseInt(d.slice(8));
-    let cls = 'wd-dot'; if(done) cls+=' done'; else if(isToday) cls+=' today';
-    return `<div class="week-day"><div class="wd-lbl">${DAYS_LABEL[i]}</div><div class="${cls}">${num}</div></div>`;
-  }).join('');
-
-  const hist = Object.entries(logs).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,20).map(([d,lg])=>{
-    const exDone = Object.values(lg.exercises||{}).filter(e=>e.done).length;
-    if(exDone===0&&!lg.dayNote) return '';
-    const dt = new Date(d);
-    return `<div class="card" style="margin-top:0">
-      <div class="hist-row">
-        <span style="font-size:14px;font-weight:600">${dt.getMonth()+1}/${dt.getDate()}</span>
-        <span style="font-size:12px;color:${exDone>0?'var(--grn)':'var(--mut)'}">${exDone>0?`✓ ${exDone} 個動作`:'未記錄'}</span>
-      </div>
-      ${lg.dayNote?`<div class="hist-note">${lg.dayNote}</div>`:''}
-    </div>`;
-  }).join('');
-
-  document.getElementById('pg-stats').innerHTML = `
-  <div class="topbar"><div class="topbar-title">訓練紀錄</div></div>
-  <div class="stat-row">
-    <div class="stat-box"><div class="stat-num">${streak}</div><div class="stat-lbl">連續天數 🔥</div></div>
-    <div class="stat-box"><div class="stat-num">${weekDone}</div><div class="stat-lbl">本週完成天</div></div>
-    <div class="stat-box"><div class="stat-num">${totalEx}</div><div class="stat-lbl">累計動作</div></div>
-  </div>
-  <div class="card"><div class="week-grid">${dots}</div></div>
-  <div class="sec-lbl">歷史紀錄</div>
-  ${hist||`<div style="padding:20px;text-align:center;color:var(--mut);font-size:13px">還沒有紀錄，開始訓練吧！</div>`}`;
 }
 
 // ── INFO ──
@@ -756,6 +786,9 @@ function renderInfo(){
 // ── INIT ──
 load();
 renderToday();
+renderSchedule();
+renderStats();
+renderInfo();
 </script>
 </body>
 </html>
