@@ -156,7 +156,15 @@ html,body{
   background:var(--acc);color:#fff;font-size:15px;font-weight:700;
   cursor:pointer;font-family:inherit;margin-top:12px;
 }
-@keyframes dn{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.guide-section{margin-bottom:16px;}
+.guide-section-title{font-size:12px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:10px;text-transform:uppercase;}
+.guide-step{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start;}
+.guide-step-num{width:22px;height:22px;border-radius:50%;background:var(--acc);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.guide-step-text{font-size:13px;line-height:1.6;color:var(--txt);}
+.guide-tip{display:flex;gap:8px;margin-bottom:7px;align-items:flex-start;}
+.guide-tip-icon{font-size:14px;flex-shrink:0;}
+.guide-tip-text{font-size:13px;line-height:1.6;color:var(--mut);}
+.info-btn{background:none;border:none;color:var(--mut);font-size:16px;cursor:pointer;padding:2px 4px;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -175,7 +183,16 @@ html,body{
   </nav>
 </div>
 
-<div class="overlay" id="note-overlay" onclick="if(event.target===this)closeNote()">
+<div class="overlay" id="guide-overlay" onclick="if(event.target===this)closeGuide()">
+  <div class="modal" id="guide-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-top">
+      <div class="modal-title" id="guide-title"></div>
+      <button class="modal-close" onclick="closeGuide()">×</button>
+    </div>
+    <div id="guide-body"></div>
+  </div>
+</div>
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-top">
@@ -199,6 +216,12 @@ const SCHEDULE = [
       {name:"窄握臥推", sets:"3", reps:"10下", weight:"45 kg"},
       {name:"滑輪下壓", sets:"3", reps:"12下", weight:"20 kg"},
       {name:"懸吊捲腹", sets:"3", reps:"15下", weight:"自身體重"},
+    ],
+    cooldown:[
+      {name:"胸肌門框伸展", duration:"30秒×2側", note:"手臂扶門框，身體往前傾伸展胸肌"},
+      {name:"肩膀前側伸展", duration:"30秒×2側", note:"手臂往後伸，感受肩膀和胸肌前側拉伸"},
+      {name:"肱三頭過頭伸展", duration:"30秒×2側", note:"手臂舉過頭彎曲，另一手輕壓手肘"},
+      {name:"胸椎泡棉滾筒放鬆", duration:"1-2分鐘", note:"滾輪放在上背，緩慢前後滾動放鬆胸椎"},
     ]
   },
   {
@@ -210,6 +233,12 @@ const SCHEDULE = [
       {name:"單手啞鈴划船", sets:"3", reps:"10下", weight:"28 kg"},
       {name:"坐姿繩索划船", sets:"3", reps:"12下", weight:"45 kg"},
       {name:"啞鈴彎舉", sets:"3", reps:"12下", weight:"14 kg"},
+    ],
+    cooldown:[
+      {name:"闊背肌懸吊伸展", duration:"30秒×2次", note:"抓住單槓讓身體懸掛放鬆，感受背部拉伸"},
+      {name:"貓牛式", duration:"10下×2組", note:"四足跪姿，配合呼吸活動脊椎放鬆下背"},
+      {name:"兒童式", duration:"45秒×2次", note:"跪坐後身體前傾趴下，雙手往前伸展背部"},
+      {name:"肱二頭壁面伸展", duration:"30秒×2側", note:"手掌貼牆掌心朝外，身體微轉伸展手臂前側"},
     ]
   },
   {
@@ -221,6 +250,13 @@ const SCHEDULE = [
       {name:"腿彎舉", sets:"3", reps:"12下", weight:"40 kg"},
       {name:"站姿提踵", sets:"4", reps:"15下", weight:"60 kg"},
       {name:"側棒式", sets:"3", reps:"30秒/側", weight:"—"},
+    ],
+    cooldown:[
+      {name:"股四頭肌站姿伸展", duration:"30秒×2側", note:"單腳站立，另一腳往後彎，手握腳踝貼近臀部"},
+      {name:"大腿後側坐姿伸展", duration:"30秒×2側", note:"坐地一腳伸直，身體往前傾感受腿後腱拉伸"},
+      {name:"髖屈肌弓步伸展", duration:"30秒×2側", note:"弓步姿勢，後腳膝蓋著地，重心往前伸展"},
+      {name:"大腿泡棉滾筒放鬆", duration:"1-2分鐘", note:"前側、後側、外側各放鬆，找痠痛點停留"},
+      {name:"小腿拉筋", duration:"30秒×2側", note:"腳尖頂牆或踩踏板邊緣，腳跟往下壓"},
     ]
   },
   {
@@ -232,6 +268,12 @@ const SCHEDULE = [
       {name:"啞鈴前平舉", sets:"3", reps:"12下", weight:"10 kg"},
       {name:"錘式彎舉", sets:"3", reps:"12下", weight:"14 kg"},
       {name:"過頭肱三頭伸展", sets:"3", reps:"12下", weight:"16 kg"},
+    ],
+    cooldown:[
+      {name:"肩膀跨胸伸展", duration:"30秒×2側", note:"一手橫跨胸前，另一手輕壓手肘往身體方向"},
+      {name:"肩膀後側伸展", duration:"30秒×2側", note:"手臂往對側伸，感受後三角和旋轉肌伸展"},
+      {name:"頸部側傾伸展", duration:"30秒×2側", note:"頭往一側傾，感受頸部和斜方肌上束拉伸"},
+      {name:"手腕旋轉放鬆", duration:"10圈×2方向", note:"雙手握拳，慢慢旋轉放鬆手腕關節"},
     ]
   },
   {
@@ -243,20 +285,167 @@ const SCHEDULE = [
       {name:"腿彎舉", sets:"3", reps:"12下", weight:"35 kg"},
       {name:"滾輪捲腹", sets:"3", reps:"10下", weight:"自身體重"},
       {name:"農夫走路", sets:"3", reps:"20公尺", weight:"28 kg"},
+    ],
+    cooldown:[
+      {name:"臀肌鴿式伸展", duration:"45秒×2側", note:"一腳橫放在前，另腳往後伸，上身前傾深度伸展臀肌"},
+      {name:"大腿後側站姿伸展", duration:"30秒×2側", note:"單腳踩在椅子上，身體往前傾伸展腿後腱"},
+      {name:"下背貓牛放鬆", duration:"10下×2組", note:"四足跪姿，特別放慢速度感受腰椎活動"},
+      {name:"臀部泡棉滾筒放鬆", duration:"1分鐘×2側", note:"坐在滾筒上，單側重心，找臀部痠痛點停留"},
+      {name:"腹部蛇式伸展", duration:"20秒×3次", note:"趴地雙手撐起上半身，伸展腹肌和腰椎前側"},
     ]
   },
   {
     title:"星期六・休息",
-    exercises:[]
+    exercises:[],
+    cooldown:[]
   },
   {
     title:"星期日・休息",
-    exercises:[]
+    exercises:[],
+    cooldown:[]
   }
 ];
 
-const DAYS_LABEL = ["一","二","三","四","五","六","日"];
-const DB = "fitapp_v5";
+const EXERCISE_GUIDE = {
+  "槓鈴臥推":{
+    steps:["躺在臥推椅上，眼睛對準槓鈴正下方","雙手握距略寬於肩，握槓後深吸一口氣撐緊核心","槓鈴下放至胸口（乳頭位置），手肘約45度角","胸肌發力將槓鈴推回，鎖骨前不要完全鎖死"],
+    tips:["下背保持微弓，不要完全貼平椅面","腳踩穩地板，不要懸空","下放時不要彈胸，要有控制地觸胸"]
+  },
+  "上斜啞鈴臥推":{
+    steps:["椅背調至30-45度，躺好後啞鈴置於大腿","用大腿彈力將啞鈴舉起，調整至胸口兩側","深吸氣，啞鈴下放至胸口上方（鎖骨附近）","胸肌發力往斜上方推起，頂端略靠攏但不碰觸"],
+    tips:["重點刺激上胸，不要讓肩膀代償","下放角度是斜後方，不是直接往旁邊","重量比平臥推輕20-30%是正常的"]
+  },
+  "繩索夾胸（下斜）":{
+    steps:["滑輪調至高位，雙手握把站在中間","上半身微前傾，手肘微彎保持固定","雙臂往斜下方交叉夾合，感受胸肌中縫收縮","緩慢回到起始位置，感受胸肌被拉伸"],
+    tips:["動作過程手肘角度不要改變","夾到底時停頓1秒感受收縮","這是孤立動作，用輕重量做好感受"]
+  },
+  "窄握臥推":{
+    steps:["握距與肩同寬或略窄，握槓下方","槓鈴下放至胸口下方（肚臍偏上）","手肘貼近身體兩側，不要外展","肱三頭肌發力推起"],
+    tips:["握距太窄會傷手腕，不需要極度窄握","感受重點在手臂後側肱三頭肌","胸肌參與度低於一般臥推是正常的"]
+  },
+  "滑輪下壓":{
+    steps:["滑輪調至高位，雙手握繩或直桿","上半身微前傾，上臂夾緊固定在身側","前臂往下壓至手臂完全伸直","緩慢回到起始位置，感受肱三頭被拉伸"],
+    tips:["上臂不要晃動，固定是關鍵","下壓到底時停頓收縮1秒","可以單手做加強孤立感"]
+  },
+  "懸吊捲腹":{
+    steps:["雙手抓住單槓或吊環懸掛","膝蓋彎曲往胸口方向捲起","腹肌收縮讓骨盆後傾，不只是抬腿","緩慢下放，不要甩動"],
+    tips:["重點是骨盆後傾的捲曲動作，不是直接抬腿","如果太難可以先從抬膝開始","不要藉助擺盪慣性"]
+  },
+  "硬舉":{
+    steps:["槓鈴放腳背上方，站距與髖同寬","屈髖屈膝蹲下，雙手握槓略寬於腿","深吸氣撐緊核心，背部保持中立位","腿推地板同時髖部往前推，槓鈴沿小腿拉起","站直後肩膀往後夾，完成動作"],
+    tips:["起始動作最重要：下背不能圓背","槓鈴要緊貼腿部拉，不要往外飄","重量大時用混合握（一正一反）或助力帶"]
+  },
+  "引體向上":{
+    steps:["雙手握槓略寬於肩，掌心朝外","身體懸掛，肩胛下壓啟動背部","彎曲手肘將身體拉起至下巴過槓","緩慢下放，手臂完全伸直再做下一下"],
+    tips:["靠背肌發力，不是靠手臂硬拉","想像把手肘往腰部方向拉","如果做不到4下，可先用輔助機或彈力帶"]
+  },
+  "槓鈴划船":{
+    steps:["屈髖前傾約45度，背部保持中立","雙手正握槓鈴，握距略寬於肩","將槓鈴拉向肚臍方向，手肘往後拉","頂端夾緊背部，緩慢下放"],
+    tips:["不要用腰部彈動借力","上半身角度全程保持一致","感受重點在背部中段菱形肌"]
+  },
+  "單手啞鈴划船":{
+    steps:["一手一腳撐在椅子上，身體平行地面","另一手握啞鈴自然垂下","將啞鈴拉向腰部，手肘往天花板方向","頂端背肌收縮停頓，緩慢下放"],
+    tips:["不要旋轉身體借力","肩胛骨要有收縮和下放的動作","重量可以比想像中重，背肌力量大"]
+  },
+  "坐姿繩索划船":{
+    steps:["坐在划船機上，雙腳踩穩腳踏板","雙手握把，上半身微前傾伸展背部","上半身回正同時將握把拉向肚臍","手肘往後拉，夾緊背部後緩慢回放"],
+    tips:["不要用上半身前後擺動借力","回放時讓背部有完整的伸展","感受肩胛骨的收縮和打開"]
+  },
+  "啞鈴彎舉":{
+    steps:["站立或坐姿，雙手握啞鈴自然垂下","上臂固定在身側，前臂往上彎舉","彎舉至頂端時手腕可稍微外旋","緩慢下放，手臂完全伸直"],
+    tips:["上臂不要往前擺動，要固定","下放要慢，離心收縮也很重要","可以交替或同時做"]
+  },
+  "背蹲舉":{
+    steps:["槓鈴放在斜方肌上（低槓）或後三角肌上（高槓）","站距與肩同寬或略寬，腳尖稍微外展","深吸氣撐緊核心，屈髖屈膝往下蹲","膝蓋順著腳尖方向，蹲至大腿平行地面","腿部發力站起，全程保持背部中立"],
+    tips:["膝蓋不要內扣，是最重要的安全原則","蹲下時重心在腳掌中央到腳跟","深度至少平行，有能力可以蹲更深"]
+  },
+  "保加利亞分腿蹲":{
+    steps:["後腳放在椅子或箱子上，前腳往前踏一大步","上半身保持直立，核心收緊","前腳屈膝往下蹲，後膝往地板方向","前腳發力站回，全程膝蓋對準腳尖"],
+    tips:["前腳距離要夠遠，膝蓋不要超過腳尖太多","這個動作對平衡要求高，先從輕重量開始","單腳訓練可以修正兩腿力量不平衡"]
+  },
+  "腿推機":{
+    steps:["坐在腿推機上，腳掌放在踏板中上方","屈膝讓踏板往下，大腿接近胸口","腿部發力將踏板推出，膝蓋不鎖死","緩慢下放回到起始位置"],
+    tips:["腳掌位置偏高可多練股四頭肌","下放時下背不要離開椅背","重量可以比深蹲重，但不要犧牲動作品質"]
+  },
+  "腿彎舉":{
+    steps:["趴在腿彎舉機上，腳踝放在滾輪下方","雙腿往上彎舉至90度以上","頂端收縮停頓，感受大腿後側","緩慢下放，腳踝不要完全放鬆"],
+    tips:["做動作時臀部不要離開椅墊","彎舉速度要慢，離心要有控制","可以單腳做，注意兩腳力量是否平衡"]
+  },
+  "站姿提踵":{
+    steps:["站在提踵機或踏板邊緣，前腳掌踩穩","腳跟盡量往下降，感受小腿完整伸展","用小腿力量將腳跟提起至最高點","頂端停頓1秒，緩慢下放"],
+    tips:["動作範圍要完整，上下都要到極限","小腿很耐操，組數和次數可以多","可以腳尖朝內/外變化刺激不同部位"]
+  },
+  "側棒式":{
+    steps:["側臥，用前臂和腳側撐起身體","身體從頭到腳保持一直線","核心用力，臀部不要下沉或上翹","維持規定時間，換邊重複"],
+    tips:["呼吸要保持正常，不要憋氣","如果太難可以先從膝蓋著地開始","進階可以加上抬腿或旋轉動作"]
+  },
+  "槓鈴肩推（坐姿）":{
+    steps:["坐在椅背垂直的椅子上，槓鈴置於頸前","握距略寬於肩，深吸氣撐緊核心","將槓鈴往正上方推起，手臂完全伸直","緩慢下放至下巴高度，不要放到鎖骨"],
+    tips:["下背不要過度後仰借力","全程核心收緊保護腰椎","站姿肩推對核心要求更高，可以漸進改為站姿"]
+  },
+  "啞鈴側平舉":{
+    steps:["雙手握啞鈴自然垂在身側","雙臂微彎，往兩側平舉至肩膀高度","手肘高度略高於手腕","緩慢下放，不要完全放鬆"],
+    tips:["不要用甩動借力，控制是關鍵","重量不需要很重，感受肩膀中束","小指可以稍微往上傾，增加刺激感"]
+  },
+  "繩索面拉":{
+    steps:["滑輪調至臉部高度，雙手握繩子兩端","手肘與肩同高，往後拉至臉部兩側","外旋肩膀，夾緊後三角和菱形肌","緩慢回到起始位置"],
+    tips:["這個動作對肩膀健康很重要","重量輕但要感受後肩和上背的收縮","每次訓練都建議做，可以改善駝背"]
+  },
+  "啞鈴前平舉":{
+    steps:["雙手握啞鈴自然垂在身前","雙臂微彎，往前舉至肩膀高度","頂端停頓，感受前三角收縮","緩慢下放"],
+    tips:["不要借助身體前後擺動","可以交替或同時做","前三角在臥推時已有訓練，不需要太重"]
+  },
+  "錘式彎舉":{
+    steps:["雙手握啞鈴，掌心相對（中立握）","上臂固定在身側，前臂往上彎舉","彎至頂端時肱肌和肱橈肌有感","緩慢下放"],
+    tips:["掌心相對是與一般彎舉的最大差異","主要訓練肱肌和肱橈肌，讓手臂更厚實","可以交替或同時做"]
+  },
+  "過頭肱三頭伸展":{
+    steps:["雙手握一個啞鈴舉過頭，雙手扣住一端","手肘彎曲讓啞鈴下放到頭部後方","肱三頭肌發力將啞鈴推回頭頂","全程上臂保持垂直地面"],
+    tips:["這個動作可以完整伸展肱三頭長頭","下放時手肘不要過度外展","可以坐著做，更容易保持上臂穩定"]
+  },
+  "羅馬尼亞硬舉":{
+    steps:["雙手握槓站立，膝蓋微彎不要鎖死","屈髖將上半身往前傾，背部保持中立","槓鈴沿大腿前側往下滑，感受大腿後側伸展","屈髖肌發力，上半身回到直立"],
+    tips:["這是髖鉸鏈動作，不是深蹲","感受大腿後側（腿後腱）的拉伸才是對的","槓鈴不需要碰地，下放到感受到緊繃即可"]
+  },
+  "臀推":{
+    steps:["上背靠在椅子邊緣，槓鈴放在髖部","腳踩地，與肩同寬，小腿盡量垂直地面","臀部發力往上推，推至髖部完全伸展","頂端夾緊臀部停頓，緩慢下放"],
+    tips:["下巴收，眼睛看斜前方，不要過度仰頭","推到頂端時脊椎保持中立，不要過度伸展腰椎","可以在槓鈴下加海綿墊保護髖骨"]
+  },
+  "滾輪捲腹":{
+    steps:["跪地，雙手握滾輪放在膝蓋前方","核心收緊，身體往前滾出，手臂往前伸","滾到快要趴下前停住","用腹肌收縮將身體捲回起始位置"],
+    tips:["這個動作難度很高，先從小範圍開始","下背不能塌陷，全程核心要撐緊","如果太難先練棒式和捲腹打好基礎"]
+  },
+  "農夫走路":{
+    steps:["雙手各握一個啞鈴或壺鈴","站直，肩膀往後往下夾，核心收緊","小步伐穩定地走規定距離","保持身體直立，不要傾斜"],
+    tips:["重量盡量重，這才能訓練到握力和核心","步伐不要太大，保持穩定","肩膀要主動維持穩定，不要讓重量把你往下拉"]
+  },
+  "腿推機（窄距）":{
+    steps:["坐在腿推機上，雙腳靠近踏板中間窄站距","屈膝讓踏板往下，大腿接近胸口","雙腿發力推出，膝蓋不鎖死","緩慢下放回起始位置"],
+    tips:["窄站距讓外側股四頭肌（股外側肌）更有感","膝蓋對準腳尖方向，不要內扣","重量比寬站距輕一些是正常的"]
+  },
+  "泡棉滾筒放鬆":{
+    steps:["將滾筒放在目標肌肉下方","用體重在滾筒上緩慢滾動","找到痠痛點停留15-30秒","全身主要肌群都可以放鬆"],
+    tips:["不要在關節上滾","酸痛點停留放鬆效果更好","放鬆後可以接著做靜態伸展"]
+  },
+  "髖屈肌伸展":{
+    steps:["單膝跪地（弓步姿勢）","後腳膝蓋著地，前腳踩穩","身體直立，重心往前移","感受後腳大腿前側和鼠蹊部的伸展"],
+    tips:["不要讓腰部過度後仰代償","可以用手扶牆保持平衡","每側維持30秒以上效果較佳"]
+  },
+  "胸椎旋轉":{
+    steps:["側臥，雙膝彎曲疊在一起，雙手往前伸直","上方手臂往後旋轉，帶動胸椎轉動","眼睛跟著手轉，讓上背盡量貼地","緩慢回到起始位置，換邊重複"],
+    tips:["腰椎不要跟著轉，固定下半身","呼吸配合動作，轉到底時吐氣","活動度不足時不要勉強，慢慢進步"]
+  },
+  "腳踝活動度":{
+    steps:["站立，單腳往前踩，膝蓋往腳尖方向推","讓膝蓋盡量超過腳尖，腳跟不離地","往內、外、正前方各做幾圈","換腳重複"],
+    tips:["腳跟一定要踩穩，不能離地","這個動作可以改善深蹲的腳踝限制","每天做效果更明顯"]
+  },
+  "貓牛式":{
+    steps:["四足跪姿，手腕在肩膀正下方，膝蓋在髖正下方","吸氣時肚子往下沉，頭往上看（牛式）","吐氣時背部往上拱，頭往下看（貓式）","緩慢交替，配合呼吸節奏"],
+    tips:["動作要緩慢，感受每節脊椎的活動","早起或訓練前做都很適合","有助於放鬆腰背部僵硬"]
+  },
+};
+
+
 
 // ── State ──
 let logs = {};
@@ -347,15 +536,16 @@ function renderToday(){
     exs.forEach((ex,i)=>{
       const done = log.exercises[i]?.done;
       const actual = log.exercises[i];
-      html += `<div class="ex-row${done?' done':''}" onclick="toggleEx(${i})">
-        <div class="ex-check${done?' checked':''}"><span class="check-mark">✓</span></div>
-        <div style="flex:1">
+      html += `<div class="ex-row${done?' done':''}">
+        <div class="ex-check${done?' checked':''}" onclick="toggleEx(${i})"><span class="check-mark">✓</span></div>
+        <div style="flex:1" onclick="toggleEx(${i})">
           <div class="ex-name">${ex.name}</div>
           <div class="ex-detail">${ex.sets}組 × ${ex.reps}
             ${actual?.actualSets?`<span style="color:var(--grn)"> · 實際 ${actual.actualSets}組 ${actual.actualWeight||''}kg</span>`:''}
           </div>
         </div>
-        <div class="ex-weight">${ex.weight}</div>
+        <button class="info-btn" onclick="openGuide('${ex.name.replace(/'/g,"\\'")}')">📖</button>
+        <div class="ex-weight" onclick="toggleEx(${i})">${ex.weight}</div>
       </div>`;
     });
     html += `</div>`;
@@ -382,7 +572,26 @@ function renderToday(){
     html += `</div>`;
   }
 
-  document.getElementById('pg-today').innerHTML = html;
+    // Cooldown section
+    if(day.cooldown && day.cooldown.length>0){
+      html += `<div class="card">
+        <div class="card-head">
+          <span class="card-head-icon">🧘</span>
+          <span class="card-head-title">收操放鬆</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--mut)">約 10 分鐘</span>
+        </div>`;
+      day.cooldown.forEach((c,i)=>{
+        html += `<div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:${i<day.cooldown.length-1?'1px solid var(--bd)':'none'}">
+          <span style="font-size:18px;flex-shrink:0">🔵</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--txt)">${c.name}</div>
+            <div style="font-size:12px;color:var(--mut);margin-top:2px">${c.note}</div>
+          </div>
+          <div style="font-size:12px;color:var(--acc2);font-weight:600;flex-shrink:0;text-align:right">${c.duration}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
 }
 
 function toggleEx(i){
@@ -398,7 +607,28 @@ function logField(i,field,val){
   persist();
 }
 
-// ── NOTE ──
+// ── GUIDE ──
+function openGuide(name){
+  const g = EXERCISE_GUIDE[name];
+  document.getElementById('guide-title').textContent = name;
+  if(!g){
+    document.getElementById('guide-body').innerHTML = `<div style="color:var(--mut);font-size:13px;padding:8px 0">暫無教學資料</div>`;
+  } else {
+    const steps = g.steps.map((s,i)=>`<div class="guide-step"><div class="guide-step-num">${i+1}</div><div class="guide-step-text">${s}</div></div>`).join('');
+    const tips = g.tips.map(t=>`<div class="guide-tip"><div class="guide-tip-icon">💡</div><div class="guide-tip-text">${t}</div></div>`).join('');
+    document.getElementById('guide-body').innerHTML = `
+      <div class="guide-section">
+        <div class="guide-section-title">動作步驟</div>
+        ${steps}
+      </div>
+      <div class="guide-section">
+        <div class="guide-section-title">注意事項</div>
+        ${tips}
+      </div>`;
+  }
+  document.getElementById('guide-overlay').classList.add('show');
+}
+function closeGuide(){ document.getElementById('guide-overlay').classList.remove('show'); }
 function openNote(){
   document.getElementById('note-ta').value = getLog().dayNote||'';
   document.getElementById('note-overlay').classList.add('show');
@@ -420,15 +650,33 @@ function renderSchedule(){
       const log = getLog();
       const done = log.exercises[i]?.done;
       return `
-      <div class="ex-row${done?' done':''}" onclick="toggleEx(${i});renderSchedule()">
-        <div class="ex-check${done?' checked':''}"><span class="check-mark">✓</span></div>
-        <div style="flex:1">
+      <div class="ex-row${done?' done':''}">
+        <div class="ex-check${done?' checked':''}" onclick="toggleEx(${i});renderSchedule()"><span class="check-mark">✓</span></div>
+        <div style="flex:1" onclick="toggleEx(${i});renderSchedule()">
           <div class="ex-name">${ex.name}</div>
           <div class="ex-detail">${ex.sets}組 × ${ex.reps}</div>
         </div>
-        <div class="ex-weight">${ex.weight}</div>
+        <button class="info-btn" onclick="openGuide('${ex.name.replace(/'/g,"\\'")}')">📖</button>
+        <div class="ex-weight" onclick="toggleEx(${i});renderSchedule()">${ex.weight}</div>
       </div>`;
     }).join('');
+
+  // Cooldown
+  let cooldownRows = '';
+  if(day.cooldown && day.cooldown.length>0){
+    cooldownRows = `<div class="card" style="margin-top:0">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--bd);font-size:14px;font-weight:700;color:var(--acc2)">🧘 收操放鬆</div>
+      ${day.cooldown.map((c,i)=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:${i<day.cooldown.length-1?'1px solid var(--bd)':'none'}">
+          <span style="font-size:18px;flex-shrink:0">🔵</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--txt)">${c.name}</div>
+            <div style="font-size:12px;color:var(--mut);margin-top:2px">${c.note}</div>
+          </div>
+          <div style="font-size:12px;color:var(--acc2);font-weight:600;flex-shrink:0;text-align:right">${c.duration}</div>
+        </div>`).join('')}
+    </div>`;
+  }
 
   document.getElementById('pg-schedule').innerHTML = `
   <div class="topbar"><div class="topbar-title">課表總覽</div></div>
@@ -436,7 +684,8 @@ function renderSchedule(){
   <div class="card">
     <div class="sched-title">${day.title}</div>
     ${exRows}
-  </div>`;
+  </div>
+  ${cooldownRows}`;
 }
 function switchSched(i){ schedIdx=i; renderSchedule(); }
 
