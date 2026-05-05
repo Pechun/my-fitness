@@ -93,7 +93,14 @@ html,body{
   transition:border-color .2s;
 }
 .log-input:focus{border-color:var(--acc);}
-.log-input.filled{border-color:var(--acc);}
+.log-note-input{
+  width:100%;background:var(--s2);border:1.5px solid var(--bd);border-radius:8px;
+  color:var(--txt);padding:9px 10px;font-size:13px;font-family:inherit;
+  resize:none;min-height:56px;outline:none;line-height:1.5;
+  transition:border-color .2s;
+}
+.log-note-input:focus{border-color:var(--acc);}
+.log-note-input::placeholder{color:var(--mut);}
 .rest-card{padding:28px;text-align:center;color:var(--mut);}
 .rest-emoji{font-size:36px;margin-bottom:8px;}
 .rest-text{font-size:15px;font-weight:600;margin-bottom:4px;}
@@ -164,7 +171,18 @@ html,body{
 .guide-tip{display:flex;gap:8px;margin-bottom:7px;align-items:flex-start;}
 .guide-tip-icon{font-size:14px;flex-shrink:0;}
 .guide-tip-text{font-size:13px;line-height:1.6;color:var(--mut);}
-.info-btn{background:none;border:none;color:var(--mut);font-size:16px;cursor:pointer;padding:2px 4px;flex-shrink:0;}
+/* Backup modal */
+.backup-modal{
+  width:100%;max-width:480px;background:var(--s1);
+  border-radius:20px 20px 0 0;
+  padding:28px 20px calc(32px + var(--safe-bot));
+  text-align:center;
+}
+.backup-emoji{font-size:52px;margin-bottom:12px;}
+.backup-title{font-size:19px;font-weight:700;margin-bottom:8px;}
+.backup-sub{font-size:13px;color:var(--mut);line-height:1.65;margin-bottom:24px;}
+.backup-btn-main{width:100%;padding:15px;border-radius:12px;border:none;background:linear-gradient(135deg,#8b7ff7,#f0956a);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;}
+.backup-btn-skip{width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--bd);background:none;color:var(--mut);font-size:14px;cursor:pointer;font-family:inherit;}
 </style>
 </head>
 <body>
@@ -183,7 +201,15 @@ html,body{
   </nav>
 </div>
 
-<div class="overlay" id="guide-overlay" onclick="if(event.target===this)closeGuide()">
+<div class="overlay" id="backup-overlay">
+  <div class="backup-modal">
+    <div class="backup-emoji">☁️</div>
+    <div class="backup-title">本週訓練結束！</div>
+    <div class="backup-sub" id="backup-sub-text">本週你完成了訓練，要備份這週的紀錄嗎？<br>建議存到 Google Drive 或 iCloud。</div>
+    <button class="backup-btn-main" onclick="doBackupAndClose()">📥 立即備份本週紀錄</button>
+    <button class="backup-btn-skip" onclick="snoozeBackup()">下次再說</button>
+  </div>
+</div>
   <div class="modal" id="guide-modal">
     <div class="modal-handle"></div>
     <div class="modal-top">
@@ -562,15 +588,22 @@ function renderToday(){
     exs.forEach((ex,i)=>{
       const lg = log.exercises[i]||{};
       html += `<div class="log-row">
-        <div class="log-label">${ex.name} <span style="color:var(--acc)">${ex.weight}</span></div>
-        <div class="log-inputs">
+        <div class="log-label">${ex.name} <span style="color:var(--acc)">${ex.weight}</span>
+          <span style="color:var(--mut);font-weight:400"> · 計畫 ${ex.sets}組×${ex.reps}</span>
+        </div>
+        <div class="log-inputs" style="margin-bottom:8px">
           <input class="log-input${lg.actualSets?' filled':''}" style="flex:1" type="number" inputmode="numeric"
-            placeholder="實際組數" value="${lg.actualSets||''}"
+            placeholder="組數" value="${lg.actualSets||''}"
             oninput="logField(${i},'actualSets',this.value);this.classList.toggle('filled',!!this.value)">
-          <input class="log-input${lg.actualWeight?' filled':''}" style="flex:1.5" type="number" inputmode="decimal"
+          <input class="log-input${lg.actualReps?' filled':''}" style="flex:1" type="number" inputmode="numeric"
+            placeholder="每組次數" value="${lg.actualReps||''}"
+            oninput="logField(${i},'actualReps',this.value);this.classList.toggle('filled',!!this.value)">
+          <input class="log-input${lg.actualWeight?' filled':''}" style="flex:1" type="number" inputmode="decimal"
             placeholder="重量 kg" value="${lg.actualWeight||''}"
             oninput="logField(${i},'actualWeight',this.value);this.classList.toggle('filled',!!this.value)">
         </div>
+        <textarea class="log-note-input" placeholder="備註（感受、調整方向...）"
+          oninput="logField(${i},'note',this.value)">${lg.note||''}</textarea>
       </div>`;
     });
     html += `</div>`;
@@ -597,7 +630,54 @@ function renderToday(){
       html += `</div>`;
     }
 
-  html += `<div style="height:20px"></div>`;
+    // ── 本日成果摘要 ──
+    const loggedExs = exs.filter((_,i)=>log.exercises[i]?.actualSets||log.exercises[i]?.actualWeight||log.exercises[i]?.done);
+    if(loggedExs.length>0 || doneCount>0){
+      const totalVolume = exs.reduce((sum,ex,i)=>{
+        const lg = log.exercises[i]||{};
+        const sets = parseFloat(lg.actualSets)||0;
+        const weight = parseFloat(lg.actualWeight)||parseFloat(ex.weight)||0;
+        const reps = parseInt(ex.reps)||0;
+        return sum + sets*weight*reps;
+      },0);
+      html += `<div class="card">
+        <div class="card-head">
+          <span class="card-head-icon">🏆</span>
+          <span class="card-head-title">本日成果</span>
+          <span class="badge" style="background:rgba(139,127,247,.15);color:var(--acc);margin-left:auto">${doneCount}/${exs.length} 完成</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bd)">
+          <div style="background:var(--s1);padding:16px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:var(--grn)">${doneCount}</div>
+            <div style="font-size:11px;color:var(--mut);margin-top:4px">完成動作</div>
+          </div>
+          <div style="background:var(--s1);padding:16px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:var(--acc)">${totalVolume>0?Math.round(totalVolume).toLocaleString():'—'}</div>
+            <div style="font-size:11px;color:var(--mut);margin-top:4px">總訓練量 (kg)</div>
+          </div>
+        </div>
+        <div style="padding:4px 0">
+        ${exs.map((ex,i)=>{
+          const lg = log.exercises[i]||{};
+          const done = lg.done;
+          const hasLog = lg.actualSets||lg.actualWeight;
+          if(!done&&!hasLog) return '';
+          return `<div style="display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--bd)">
+            <span style="font-size:15px">${done?'✅':'⬜'}</span>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600;color:${done?'var(--txt)':'var(--mut)'}">${ex.name}</div>
+              ${hasLog?`<div style="font-size:12px;color:var(--acc);margin-top:2px">
+                ${lg.actualSets?`${lg.actualSets}組`:'—'} × ${lg.actualReps||ex.reps}
+                ${lg.actualWeight?`@ ${lg.actualWeight}kg`:''}
+              </div>
+              ${lg.note?`<div style="font-size:11px;color:var(--mut);margin-top:3px">💬 ${lg.note}</div>`:''}`
+              :`<div style="font-size:12px;color:var(--mut);margin-top:2px">計畫：${ex.sets}組 × ${ex.reps} @ ${ex.weight}</div>`}
+            </div>
+          </div>`;
+        }).join('')}
+        </div>
+      </div>`;
+    }
   document.getElementById('pg-today').innerHTML = html;
   }catch(e){
     document.getElementById('pg-today').innerHTML = `
@@ -654,26 +734,35 @@ function saveNote(){
 
 // ── SCHEDULE ──
 function renderSchedule(){
+  try{
   const day = SCHEDULE[schedIdx];
+  // 課表頁用該星期對應日期的紀錄，不用今天的
+  const now = new Date();
+  const dw = now.getDay(); // 0=日
+  const mon = new Date(now);
+  mon.setDate(now.getDate()-(dw===0?6:dw-1));
+  const schedDate = new Date(mon);
+  schedDate.setDate(mon.getDate()+schedIdx);
+  const schedDateStr = schedDate.toISOString().slice(0,10);
+  const schedLog = logs[schedDateStr]||{exercises:{},dayNote:""};
+
   let tabs = SCHEDULE.map((d,i)=>`<button class="tab-btn${i===schedIdx?' on':''}" onclick="switchSched(${i})">${["一","二","三","四","五","六","日"][i]}</button>`).join('');
   let exRows = day.exercises.length===0
     ? `<div class="rest-card"><div class="rest-emoji">🧘</div><div class="rest-text">休息日</div></div>`
     : day.exercises.map((ex,i)=>{
-      const log = getLog();
-      const done = log.exercises[i]?.done;
+      const done = schedLog.exercises[i]?.done;
       return `
       <div class="ex-row${done?' done':''}">
-        <div class="ex-check${done?' checked':''}" onclick="toggleEx(${i});renderSchedule()"><span class="check-mark">✓</span></div>
-        <div style="flex:1" onclick="toggleEx(${i});renderSchedule()">
+        <div class="ex-check${done?' checked':''}" onclick="toggleSchedEx('${schedDateStr}',${i})"><span class="check-mark">✓</span></div>
+        <div style="flex:1" onclick="toggleSchedEx('${schedDateStr}',${i})">
           <div class="ex-name">${ex.name}</div>
           <div class="ex-detail">${ex.sets}組 × ${ex.reps}</div>
         </div>
         <button class="info-btn" onclick="openGuide('${ex.name.replace(/'/g,"\\'")}')">📖</button>
-        <div class="ex-weight" onclick="toggleEx(${i});renderSchedule()">${ex.weight}</div>
+        <div class="ex-weight" onclick="toggleSchedEx('${schedDateStr}',${i})">${ex.weight}</div>
       </div>`;
     }).join('');
 
-  // Cooldown
   let cooldownRows = '';
   if(day.cooldown && day.cooldown.length>0){
     cooldownRows = `<div class="card" style="margin-top:0">
@@ -697,18 +786,48 @@ function renderSchedule(){
     <div class="sched-title">${day.title}</div>
     ${exRows}
   </div>
-  ${cooldownRows}`;
+  ${cooldownRows}
+  <div style="height:20px"></div>`;
+  }catch(e){
+    document.getElementById('pg-schedule').innerHTML = `
+    <div class="topbar"><div class="topbar-title">課表總覽</div></div>
+    <div style="padding:24px;text-align:center;color:var(--mut);font-size:13px">載入時發生錯誤，請重新整理</div>`;
+  }
+}
+
+function toggleSchedEx(dateStr, i){
+  if(!logs[dateStr]) logs[dateStr]={exercises:{},dayNote:""};
+  if(!logs[dateStr].exercises[i]) logs[dateStr].exercises[i]={};
+  logs[dateStr].exercises[i].done = !logs[dateStr].exercises[i].done;
+  persist(); renderSchedule();
 }
 function switchSched(i){ schedIdx=i; renderSchedule(); }
 
 // ── STATS ──
+let viewingWeekOffset = 0; // 0=本週, -1=上週, -2=上上週...
+
+function getWeekDates(offset){
+  const now = new Date(); const dw = now.getDay();
+  const mon = new Date(now);
+  mon.setDate(now.getDate()-(dw===0?6:dw-1)+(offset*7));
+  return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d.toISOString().slice(0,10);});
+}
+
+function getWeekLabel(offset){
+  if(offset===0) return "本週";
+  if(offset===-1) return "上週";
+  const week = getWeekDates(offset);
+  const d = new Date(week[0]);
+  return `${d.getMonth()+1}/${d.getDate()} 那週`;
+}
+
 function renderStats(){
   try{
     const todStr = todayStr();
-    const now = new Date(); const dw = now.getDay();
-    const mon = new Date(now); mon.setDate(now.getDate()-(dw===0?6:dw-1));
-    const week = Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d.toISOString().slice(0,10);});
+    const week = getWeekDates(viewingWeekOffset);
+    const isCurrentWeek = viewingWeekOffset===0;
 
+    // 統計數字
     let streak=0;
     const sortedKeys = Object.keys(logs).sort().reverse();
     for(const k of sortedKeys){
@@ -717,53 +836,196 @@ function renderStats(){
       else break;
     }
     const weekDone = week.filter(d=>{
-      const exObj = logs[d]?.exercises||{};
-      return Object.values(exObj).some(e=>e&&e.done);
+      return Object.values(logs[d]?.exercises||{}).some(e=>e&&e.done);
     }).length;
     const totalEx = Object.values(logs).reduce((s,l)=>{
       return s + Object.values(l.exercises||{}).filter(e=>e&&e.done).length;
     },0);
 
+    // 週曆點點
     const dots = week.map((d,i)=>{
       const done = Object.values(logs[d]?.exercises||{}).some(e=>e&&e.done);
       const isToday = d===todStr;
       const num = parseInt(d.slice(8));
-      let cls = 'wd-dot'; if(done) cls+=' done'; else if(isToday) cls+=' today';
+      let cls = 'wd-dot'; if(done) cls+=' done'; else if(isToday&&isCurrentWeek) cls+=' today';
       return `<div class="week-day"><div class="wd-lbl">${DAYS_LABEL[i]}</div><div class="${cls}">${num}</div></div>`;
     }).join('');
 
-    const histItems = Object.entries(logs)
-      .sort((a,b)=>b[0].localeCompare(a[0]))
-      .slice(0,20)
-      .map(([d,lg])=>{
-        const exDone = Object.values(lg.exercises||{}).filter(e=>e&&e.done).length;
-        if(exDone===0 && !lg.dayNote) return '';
-        const dt = new Date(d);
-        return `<div class="card" style="margin-top:0">
-          <div class="hist-row">
-            <span style="font-size:14px;font-weight:600">${dt.getMonth()+1}/${dt.getDate()}</span>
-            <span style="font-size:12px;color:${exDone>0?'var(--grn)':'var(--mut)'}">${exDone>0?`✓ ${exDone} 個動作`:'未記錄'}</span>
+    // 週訓練詳細報告
+    const weekReport = week.map((d,wi)=>{
+      const lg = logs[d];
+      const dayData = SCHEDULE[wi];
+      if(!dayData||dayData.exercises.length===0) return ''; // 休息日跳過
+      const exs = dayData.exercises;
+      const exDone = Object.values(lg?.exercises||{}).filter(e=>e&&e.done).length;
+      const hasAnyLog = lg && (exDone>0 || Object.values(lg.exercises||{}).some(e=>e&&(e.actualSets||e.actualWeight||e.note)));
+      if(!hasAnyLog) return '';
+
+      const dt = new Date(d);
+      const totalVol = exs.reduce((sum,ex,i)=>{
+        const e = lg?.exercises[i]||{};
+        const s = parseFloat(e.actualSets)||0;
+        const w = parseFloat(e.actualWeight)||parseFloat(ex.weight)||0;
+        const r = parseInt(e.actualReps)||parseInt(ex.reps)||0;
+        return sum+s*w*r;
+      },0);
+
+      const exRows = exs.map((ex,i)=>{
+        const e = lg?.exercises[i]||{};
+        if(!e.done&&!e.actualSets&&!e.actualWeight&&!e.note) return '';
+        return `<div style="padding:10px 14px;border-bottom:1px solid var(--bd);display:flex;gap:10px;align-items:flex-start">
+          <span style="font-size:14px;margin-top:1px">${e.done?'✅':'⬜'}</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:${e.done?'var(--txt)':'var(--mut)'}">${ex.name}</div>
+            <div style="font-size:12px;color:var(--acc);margin-top:2px">
+              ${e.actualSets?`${e.actualSets}組`:'—'} × ${e.actualReps||ex.reps} ${e.actualWeight?`@ ${e.actualWeight}kg`:''}
+              <span style="color:var(--mut)"> (計畫 ${ex.sets}×${ex.reps} @ ${ex.weight})</span>
+            </div>
+            ${e.note?`<div style="font-size:11px;color:var(--mut);margin-top:3px;line-height:1.5">💬 ${e.note}</div>`:''}
           </div>
-          ${lg.dayNote?`<div class="hist-note">${lg.dayNote}</div>`:''}
         </div>`;
       }).join('');
+
+      return `<div class="card" style="margin-top:0">
+        <div style="padding:13px 16px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <span style="font-size:14px;font-weight:700">${dt.getMonth()+1}/${dt.getDate()}</span>
+            <span style="font-size:12px;color:var(--mut);margin-left:8px">${dayData.title}</span>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:12px;color:var(--grn)">✓ ${exDone}/${exs.length} 完成</div>
+            ${totalVol>0?`<div style="font-size:11px;color:var(--mut)">量：${Math.round(totalVol).toLocaleString()} kg</div>`:''}
+          </div>
+        </div>
+        ${exRows}
+        ${lg.dayNote?`<div style="padding:10px 14px;font-size:12px;color:var(--mut);border-top:1px solid var(--bd)">📝 ${lg.dayNote}</div>`:''}
+      </div>`;
+    }).join('');
+
+    // 週切換
+    const weekNav = `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 4px">
+      <button onclick="changeWeek(-1)" style="background:var(--s2);border:1.5px solid var(--bd);color:var(--txt);padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px">← 上週</button>
+      <span style="font-size:13px;font-weight:700;color:var(--acc)">${getWeekLabel(viewingWeekOffset)}</span>
+      <button onclick="changeWeek(1)" ${isCurrentWeek?'disabled style="opacity:.3;cursor:default"':''} style="background:var(--s2);border:1.5px solid var(--bd);color:var(--txt);padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px">下週 →</button>
+    </div>`;
+
+    // 匯出按鈕
+    const exportBtn = `<div style="padding:0 14px 4px">
+      <button onclick="exportWeekBackup(${viewingWeekOffset})" style="width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--acc);background:rgba(139,127,247,.1);color:var(--acc);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
+        ☁️ 匯出${getWeekLabel(viewingWeekOffset)}紀錄備份
+      </button>
+    </div>`;
 
     document.getElementById('pg-stats').innerHTML = `
     <div class="topbar"><div class="topbar-title">訓練紀錄</div></div>
     <div class="stat-row">
       <div class="stat-box"><div class="stat-num">${streak}</div><div class="stat-lbl">連續天數 🔥</div></div>
-      <div class="stat-box"><div class="stat-num">${weekDone}</div><div class="stat-lbl">本週完成天</div></div>
+      <div class="stat-box"><div class="stat-num">${weekDone}</div><div class="stat-lbl">${getWeekLabel(viewingWeekOffset)}完成天</div></div>
       <div class="stat-box"><div class="stat-num">${totalEx}</div><div class="stat-lbl">累計動作</div></div>
     </div>
     <div class="card"><div class="week-grid">${dots}</div></div>
-    <div class="sec-lbl">歷史紀錄</div>
-    ${histItems||`<div style="padding:24px;text-align:center;color:var(--mut);font-size:13px;line-height:1.6">還沒有紀錄<br>開始訓練並打勾完成動作吧！</div>`}
+    ${weekNav}
+    ${exportBtn}
+    <div class="sec-lbl">週訓練報告</div>
+    ${weekReport||`<div style="padding:24px;text-align:center;color:var(--mut);font-size:13px;line-height:1.6">${isCurrentWeek?'本週還沒有訓練紀錄<br>完成動作並填寫即時紀錄後會顯示在這裡':'這週沒有訓練紀錄'}</div>`}
     <div style="height:20px"></div>`;
   }catch(e){
     document.getElementById('pg-stats').innerHTML = `
     <div class="topbar"><div class="topbar-title">訓練紀錄</div></div>
-    <div style="padding:24px;color:var(--mut);font-size:13px;word-break:break-all">錯誤：${e.message}<br><br>${e.stack||''}</div>`;
+    <div style="padding:24px;color:var(--mut);font-size:13px;word-break:break-all">錯誤：${e.message}</div>`;
   }
+}
+
+function exportWeekBackup(offset){
+  const week = getWeekDates(offset);
+  const label = getWeekLabel(offset);
+  const weekLabel = week[0].slice(0,10);
+
+  // 整理本週完整資料
+  const report = {
+    exportTime: new Date().toLocaleString('zh-TW'),
+    weekLabel: label,
+    weekStart: week[0],
+    weekEnd: week[6],
+    days: week.map((d,wi)=>{
+      const dayData = SCHEDULE[wi];
+      const lg = logs[d]||{exercises:{},dayNote:""};
+      const exs = dayData?.exercises||[];
+      const exDone = Object.values(lg.exercises||{}).filter(e=>e&&e.done).length;
+      const totalVol = exs.reduce((sum,ex,i)=>{
+        const e = lg.exercises[i]||{};
+        const s = parseFloat(e.actualSets)||0;
+        const w = parseFloat(e.actualWeight)||parseFloat(ex.weight)||0;
+        const r = parseInt(e.actualReps)||parseInt(ex.reps)||0;
+        return sum+s*w*r;
+      },0);
+      return {
+        date: d,
+        dayTitle: dayData?.title||'',
+        completed: `${exDone}/${exs.length}`,
+        totalVolume: Math.round(totalVol),
+        dayNote: lg.dayNote||'',
+        exercises: exs.map((ex,i)=>{
+          const e = lg.exercises[i]||{};
+          return {
+            name: ex.name,
+            plan: `${ex.sets}組×${ex.reps} @ ${ex.weight}`,
+            actual: {
+              sets: e.actualSets||'',
+              reps: e.actualReps||'',
+              weight: e.actualWeight||'',
+              done: e.done||false,
+              note: e.note||''
+            }
+          };
+        })
+      };
+    })
+  };
+
+  // 產生可讀文字報告
+  const textReport = `=============================
+健身週訓練報告
+${label}（${week[0]} ~ ${week[6]}）
+匯出時間：${report.exportTime}
+=============================
+
+${report.days.map(day=>{
+  if(!day.dayTitle||day.exercises.length===0) return `【${day.date}】休息日\n`;
+  return `【${day.date}】${day.dayTitle}
+完成：${day.completed}  總訓練量：${day.totalVolume>0?day.totalVolume+' kg':'未記錄'}
+${day.exercises.map(ex=>{
+  const a = ex.actual;
+  const actualStr = a.sets||a.reps||a.weight ? `實際：${a.sets||'?'}組×${a.reps||'?'}次 @ ${a.weight||'?'}kg` : '未記錄';
+  return `  ${a.done?'✓':'✗'} ${ex.name}
+     計畫：${ex.plan}
+     ${actualStr}${a.note?`\n     備註：${a.note}`:''}`;
+}).join('\n')}
+${day.dayNote?`日記：${day.dayNote}`:''}
+`;
+}).join('\n')}
+=============================
+JSON備份（勿刪）：
+${JSON.stringify(report, null, 2)}
+`;
+
+  // 下載檔案
+  const blob = new Blob([textReport], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `健身紀錄_${weekLabel}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function changeWeek(dir){
+  const newOffset = viewingWeekOffset + dir;
+  if(newOffset > 0) return;
+  viewingWeekOffset = newOffset;
+  renderStats();
 }
 
 // ── INFO ──
@@ -783,12 +1045,54 @@ function renderInfo(){
   </div>`;
 }
 
-// ── INIT ──
+// ── BACKUP REMINDER ──
+function checkBackupReminder(){
+  try{
+    const now = new Date();
+    const dw = now.getDay(); // 0=日
+    const hour = now.getHours();
+
+    // 週日晚上 8 點後顯示提醒
+    if(dw !== 0 || hour < 20) return;
+
+    // 檢查本週是否有訓練紀錄
+    const mon = new Date(now);
+    mon.setDate(now.getDate()-6);
+    const week = Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d.toISOString().slice(0,10);});
+    const hasTraining = week.some(d=>Object.values(logs[d]?.exercises||{}).some(e=>e&&e.done));
+    if(!hasTraining) return;
+
+    // 檢查今天是否已經提醒過 / 備份過
+    const lastBackup = localStorage.getItem('lastBackupReminder');
+    const todayKey = now.toISOString().slice(0,10);
+    if(lastBackup === todayKey) return;
+
+    // 計算本週完成天數
+    const doneDays = week.filter(d=>Object.values(logs[d]?.exercises||{}).some(e=>e&&e.done)).length;
+    document.getElementById('backup-sub-text').innerHTML =
+      `本週你完成了 <strong style="color:var(--grn)">${doneDays} 天</strong> 訓練 💪<br>立即備份這週的紀錄，方便追蹤進步！`;
+
+    // 顯示彈窗
+    document.getElementById('backup-overlay').classList.add('show');
+  }catch(e){}
+}
+
+function doBackupAndClose(){
+  exportWeekBackup(-1); // 匯出上週（週日算上週結束）
+  localStorage.setItem('lastBackupReminder', todayStr());
+  document.getElementById('backup-overlay').classList.remove('show');
+}
+
+function snoozeBackup(){
+  localStorage.setItem('lastBackupReminder', todayStr());
+  document.getElementById('backup-overlay').classList.remove('show');
+}
 load();
 renderToday();
 renderSchedule();
 renderStats();
 renderInfo();
+setTimeout(checkBackupReminder, 1500);
 </script>
 </body>
 </html>
