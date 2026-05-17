@@ -106,6 +106,13 @@ html,body{
 .rest-emoji{font-size:36px;margin-bottom:8px;}
 .rest-text{font-size:15px;font-weight:600;margin-bottom:4px;}
 .rest-sub{font-size:13px;}
+.info-btn{
+  background:rgba(139,127,247,.15);border:1.5px solid rgba(139,127,247,.3);
+  color:var(--acc);font-size:14px;cursor:pointer;
+  padding:6px 10px;border-radius:8px;flex-shrink:0;
+  font-family:inherit;line-height:1;min-width:36px;min-height:36px;
+  display:flex;align-items:center;justify-content:center;
+}
 /* Schedule tabs */
 .tab-row{display:flex;gap:8px;overflow-x:auto;padding:12px 14px;scrollbar-width:none;}
 .tab-row::-webkit-scrollbar{display:none;}
@@ -195,10 +202,10 @@ html,body{
     <div class="page" id="pg-info"></div>
   </div>
   <nav id="nav">
-    <button class="nav-btn on" id="nb-today" onclick="showTab('today')"><div class="nav-icon">🏠</div>今天</button>
-    <button class="nav-btn" id="nb-schedule" onclick="showTab('schedule')"><div class="nav-icon">📋</div>課表</button>
-    <button class="nav-btn" id="nb-stats" onclick="showTab('stats')"><div class="nav-icon">📊</div>紀錄</button>
-    <button class="nav-btn" id="nb-info" onclick="showTab('info')"><div class="nav-icon">ℹ️</div>說明</button>
+    <button class="nav-btn on" id="nb-today" onclick="showTab('today')"><div class="nav-icon">⚡</div>今天</button>
+    <button class="nav-btn" id="nb-schedule" onclick="showTab('schedule')"><div class="nav-icon">📆</div>課表</button>
+    <button class="nav-btn" id="nb-stats" onclick="showTab('stats')"><div class="nav-icon">📈</div>紀錄</button>
+    <button class="nav-btn" id="nb-info" onclick="showTab('info')"><div class="nav-icon">🙋</div>我的</button>
   </nav>
 </div>
 
@@ -211,6 +218,8 @@ html,body{
     <button class="backup-btn-skip" onclick="snoozeBackup()">下次再說</button>
   </div>
 </div>
+
+<div class="overlay" id="guide-overlay" onclick="if(event.target===this)closeGuide()">
   <div class="modal" id="guide-modal">
     <div class="modal-handle"></div>
     <div class="modal-top">
@@ -491,6 +500,7 @@ function persist(){
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function getLog(){ return logs[todayStr()]||(logs[todayStr()]={exercises:{},dayNote:""}); }
 function todayIdx(){
+  return 0; // 暫時強制顯示週一（預覽用）
   return [6,0,1,2,3,4,5][new Date().getDay()] % SCHEDULE.length;
 }
 
@@ -575,7 +585,7 @@ function renderToday(){
             ${actual?.actualSets?`<span style="color:var(--grn)"> · 實際 ${actual.actualSets}組 ${actual.actualWeight||''}kg</span>`:''}
           </div>
         </div>
-        <button class="info-btn" onclick="openGuide('${ex.name.replace(/'/g,"\\'")}')">📖</button>
+        <button class="info-btn" onclick="openGuide('${ex.name.replace(/'/g,"\\'")}')">📖 教學</button>
         <div class="ex-weight" onclick="toggleEx(${i})">${ex.weight}</div>
       </div>`;
     });
@@ -759,7 +769,7 @@ function renderSchedule(){
           <div class="ex-name">${ex.name}</div>
           <div class="ex-detail">${ex.sets}組 × ${ex.reps}</div>
         </div>
-        <button class="info-btn" onclick="openGuide('${ex.name.replace(/'/g,"\\'")}')">📖</button>
+        <button class="info-btn" onclick="openGuide('${ex.name.replace(/'/g,"\\'")}')">📖 教學</button>
         <div class="ex-weight" onclick="toggleSchedEx('${schedDateStr}',${i})">${ex.weight}</div>
       </div>`;
     }).join('');
@@ -1031,19 +1041,95 @@ function changeWeek(dir){
 
 // ── INFO ──
 function renderInfo(){
-  const items=[
-    {icon:"💪",title:"訓練重量基準",desc:"臥推 52.5kg｜深蹲 82.5kg｜硬舉 87.5kg｜肩推 30kg。這是你 5RM 的 70–75%，是最佳訓練區間。"},
-    {icon:"📈",title:"漸進原則",desc:"每 2 週，同動作增加 2.5kg（胸/肩/手臂）或 5kg（腿/背）。感覺太輕才加重，不要操之過急。"},
-    {icon:"🥗",title:"飲食建議",desc:"每日蛋白質 ≥ 140g（體重 × 1.6g）。熱量維持微赤字 200–300 kcal，達到增肌減脂效果。"},
-    {icon:"😴",title:"恢復與睡眠",desc:"每晚睡眠 7–9 小時。週三活動度訓練不可省略，有助於減少傷害風險。"},
-    {icon:"🔄",title:"課表更新週期",desc:"執行 8 週後重新測試 5RM，回報給 AI 更新訓練重量，持續進步。"},
-    {icon:"📅",title:"本週課表",desc:"一：胸肱三頭｜二：背肱二頭｜三：腿蹲主｜四：肩手臂｜五：腿鉸鏈＋核心｜六日：休息"},
-  ];
+  const bmi = (85/(1.71*1.71)).toFixed(1);
+  const ffmi = (34.6/(1.71*1.71)).toFixed(1);
   document.getElementById('pg-info').innerHTML = `
-  <div class="topbar"><div class="topbar-title">課表說明</div></div>
-  <div style="padding:12px 0 0">
-    ${items.map(p=>`<div class="info-card"><span class="info-icon">${p.icon}</span><div><div class="info-title">${p.title}</div><div class="info-desc">${p.desc}</div></div></div>`).join('')}
-  </div>`;
+  <div class="topbar"><div class="topbar-title">個人資料</div></div>
+  <div style="padding:12px 14px 0">
+
+    <!-- 生理數據 -->
+    <div style="background:linear-gradient(135deg,rgba(139,127,247,.18),rgba(240,149,106,.12));border:1px solid rgba(139,127,247,.25);border-radius:14px;padding:18px;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:14px">👤 生理數據</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
+        ${[
+          {l:"身高",v:"171",u:"cm"},
+          {l:"體重",v:"85",u:"kg"},
+          {l:"年齡",v:"33",u:"歲"},
+          {l:"體脂率",v:"29",u:"%"},
+          {l:"肌肉量",v:"34.6",u:"kg"},
+          {l:"BMI",v:bmi,u:""},
+        ].map(s=>`<div style="background:var(--s2);border-radius:10px;padding:12px 8px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:var(--txt)">${s.v}<span style="font-size:11px;color:var(--mut)">${s.u}</span></div>
+          <div style="font-size:11px;color:var(--mut);margin-top:3px">${s.l}</div>
+        </div>`).join('')}
+      </div>
+      <div style="background:var(--s2);border-radius:10px;padding:12px 14px">
+        <div style="font-size:12px;color:var(--mut);margin-bottom:8px">體組成分析</div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+          <div style="font-size:12px;color:var(--txt);min-width:48px">脂肪</div>
+          <div style="flex:1;height:8px;background:var(--bd);border-radius:100px;overflow:hidden">
+            <div style="width:29%;height:100%;background:var(--acc2);border-radius:100px"></div>
+          </div>
+          <div style="font-size:12px;color:var(--acc2);min-width:36px;text-align:right">29%</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div style="font-size:12px;color:var(--txt);min-width:48px">肌肉</div>
+          <div style="flex:1;height:8px;background:var(--bd);border-radius:100px;overflow:hidden">
+            <div style="width:${(34.6/85*100).toFixed(0)}%;height:100%;background:var(--grn);border-radius:100px"></div>
+          </div>
+          <div style="font-size:12px;color:var(--grn);min-width:36px;text-align:right">${(34.6/85*100).toFixed(0)}%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 訓練目標 -->
+    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:12px">🎯 訓練目標</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${[
+          {icon:"🔥",t:"減脂目標",d:"體脂從 29% → 20%（約減脂 7.5kg）"},
+          {icon:"💪",t:"增肌目標",d:"肌肉量從 34.6kg → 38kg"},
+          {icon:"📅",t:"訓練頻率",d:"每週 5 天，每次 60–70 分鐘"},
+        ].map(i=>`<div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="font-size:18px;flex-shrink:0">${i.icon}</span>
+          <div><div style="font-size:13px;font-weight:600">${i.t}</div><div style="font-size:12px;color:var(--mut);margin-top:2px">${i.d}</div></div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- 基準重量 -->
+    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:12px">🏋️ 5RM 基準重量</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${[
+          {n:"臥推",w:"70 kg"},{n:"深蹲",w:"115 kg"},
+          {n:"硬舉",w:"120 kg"},{n:"肩推",w:"40 kg"},
+          {n:"引體向上",w:"4 下"},
+        ].map(b=>`<div style="background:var(--s2);border-radius:10px;padding:11px 12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--mut)">${b.n}</span>
+          <span style="font-size:14px;font-weight:700;color:var(--acc)">${b.w}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- 訓練原則濃縮 -->
+    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:12px">📋 訓練原則</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${[
+          {icon:"📈",t:"漸進加重",d:"每 2 週 +2.5kg（上肢）/ +5kg（下肢）"},
+          {icon:"🥗",t:"每日蛋白質",d:"≥ 140g（體重 × 1.6g），熱量微赤字 200–300kcal"},
+          {icon:"😴",t:"恢復",d:"睡眠 7–9 小時，訓練後確實收操放鬆"},
+          {icon:"🔄",t:"週期",d:"8 週後重測 5RM，更新訓練重量"},
+        ].map(i=>`<div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="font-size:16px;flex-shrink:0">${i.icon}</span>
+          <div><div style="font-size:13px;font-weight:600">${i.t}</div><div style="font-size:12px;color:var(--mut);margin-top:1px">${i.d}</div></div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+  </div>
+  <div style="height:20px"></div>`;
 }
 
 // ── BACKUP REMINDER ──
