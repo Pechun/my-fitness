@@ -500,7 +500,6 @@ function persist(){
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function getLog(){ return logs[todayStr()]||(logs[todayStr()]={exercises:{},dayNote:""}); }
 function todayIdx(){
-  return 0; // 暫時強制顯示週一（預覽用）
   return [6,0,1,2,3,4,5][new Date().getDay()] % SCHEDULE.length;
 }
 
