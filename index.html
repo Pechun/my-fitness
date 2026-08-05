@@ -1,1184 +1,684 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="我的訓練">
-<meta name="theme-color" content="#0d0d14">
-<title>我的訓練</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>我的健身課表</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none}
-:root{
-  --bg:#0d0d14;--s1:#161622;--s2:#1e1e2e;--bd:#2d2d42;
-  --acc:#8b7ff7;--acc2:#f0956a;--grn:#4de8a0;
-  --txt:#ddddf0;--mut:#5a5a78;
-  --safe-top:env(safe-area-inset-top);
-  --safe-bot:env(safe-area-inset-bottom);
-}
-html,body{
-  height:100%;background:var(--bg);color:var(--txt);
-  font-family:system-ui,-apple-system,'Noto Sans TC',sans-serif;
-  overflow:hidden;
-}
-#app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
-#screen{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
-#nav{
-  display:flex;background:var(--s1);border-top:1px solid var(--bd);
-  padding-bottom:var(--safe-bot);flex-shrink:0;
-}
-.nav-btn{
-  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
-  background:none;border:none;cursor:pointer;color:var(--mut);
-  font-size:10px;font-family:inherit;padding:10px 0;transition:color .15s;
-}
-.nav-btn.on{color:var(--acc);}
-.nav-icon{font-size:22px;line-height:1;}
-.page{display:none;padding-bottom:20px;}
-.page.show{display:block;}
-.topbar{
-  background:var(--s1);border-bottom:1px solid var(--bd);
-  padding:calc(var(--safe-top) + 14px) 16px 14px;
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:10;
-}
-.topbar-title{font-size:17px;font-weight:700;}
-.topbar-sub{font-size:11px;color:var(--mut);margin-top:2px;}
-.card{background:var(--s1);border:1px solid var(--bd);border-radius:14px;margin:10px 14px 0;overflow:hidden;}
-.card-head{padding:13px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;}
-.card-head-icon{font-size:18px;}
-.card-head-title{font-size:14px;font-weight:700;}
-.badge{margin-left:auto;font-size:11px;padding:3px 10px;border-radius:100px;}
-.badge-done{background:rgba(77,232,160,.15);color:var(--grn);}
-.banner{
-  margin:12px 14px 0;
-  background:linear-gradient(135deg,rgba(139,127,247,.2),rgba(240,149,106,.15));
-  border:1px solid rgba(139,127,247,.25);border-radius:14px;
-  padding:16px;display:flex;align-items:center;justify-content:space-between;
-}
-.banner-title{font-size:19px;font-weight:700;}
-.banner-sub{font-size:12px;color:var(--mut);margin-top:4px;}
-.banner-note{font-size:11px;color:var(--acc);margin-top:6px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.ring-wrap{position:relative;width:56px;height:56px;flex-shrink:0;}
-.ring-wrap svg{transform:rotate(-90deg);}
-.ring-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
-.ex-row{
-  display:flex;align-items:center;gap:12px;
-  padding:14px 16px;border-bottom:1px solid var(--bd);
-  cursor:pointer;transition:opacity .2s;
-}
-.ex-row:last-child{border-bottom:none;}
-.ex-row.done{opacity:.55;}
-.ex-check{
-  width:26px;height:26px;border-radius:50%;border:2px solid var(--bd);
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;transition:all .2s;
-}
-.ex-check.checked{background:var(--grn);border-color:var(--grn);}
-.check-mark{font-size:13px;color:#0d0d14;font-weight:700;display:none;}
-.ex-check.checked .check-mark{display:block;}
-.ex-name{font-size:14px;font-weight:600;transition:all .2s;}
-.ex-row.done .ex-name{text-decoration:line-through;color:var(--mut);}
-.ex-detail{font-size:12px;color:var(--mut);margin-top:2px;}
-.ex-actual{font-size:11px;color:var(--grn);display:none;}
-.ex-weight{font-size:13px;color:var(--acc);font-weight:700;flex-shrink:0;}
-.log-row{padding:12px 16px;border-bottom:1px solid var(--bd);}
-.log-row:last-child{border-bottom:none;}
-.log-label{font-size:12px;font-weight:600;color:var(--mut);margin-bottom:8px;}
-.log-inputs{display:flex;gap:6px;}
-.log-input{
-  background:var(--s2);border:1.5px solid var(--bd);border-radius:9px;
-  color:var(--txt);padding:10px 4px;font-size:13px;font-family:inherit;outline:none;
-  transition:border-color .2s;text-align:center;min-width:0;
-}
-.log-input:focus{border-color:var(--acc);}
-.log-input.filled{border-color:var(--acc);}
-.log-note-input{
-  width:100%;background:var(--s2);border:1.5px solid var(--bd);border-radius:8px;
-  color:var(--txt);padding:9px 10px;font-size:13px;font-family:inherit;
-  resize:none;min-height:56px;outline:none;line-height:1.5;
-  transition:border-color .2s;
-}
-.log-note-input:focus{border-color:var(--acc);}
-.log-note-input::placeholder{color:var(--mut);}
-.rest-card{padding:28px;text-align:center;color:var(--mut);}
-.rest-emoji{font-size:36px;margin-bottom:8px;}
-.rest-text{font-size:15px;font-weight:600;margin-bottom:4px;}
-.rest-sub{font-size:13px;}
-.info-btn{
-  background:rgba(139,127,247,.15);border:1.5px solid rgba(139,127,247,.3);
-  color:var(--acc);font-size:14px;cursor:pointer;
-  padding:6px 10px;border-radius:8px;flex-shrink:0;
-  font-family:inherit;line-height:1;min-width:36px;min-height:36px;
-  display:flex;align-items:center;justify-content:center;
-}
-/* Schedule tabs */
-.tab-row{display:flex;gap:8px;overflow-x:auto;padding:12px 14px;scrollbar-width:none;}
-.tab-row::-webkit-scrollbar{display:none;}
-.tab-btn{
-  flex-shrink:0;padding:8px 16px;border-radius:100px;
-  border:1.5px solid var(--bd);background:var(--s2);
-  color:var(--mut);font-size:13px;cursor:pointer;
-  font-family:inherit;font-weight:500;white-space:nowrap;transition:all .15s;
-}
-.tab-btn.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700;}
-.sched-title{padding:12px 16px;border-bottom:1px solid var(--bd);font-size:14px;font-weight:700;color:var(--acc);}
-/* Stats */
-.stat-row{display:flex;gap:10px;padding:12px 14px 0;}
-.stat-box{flex:1;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:14px 10px;text-align:center;}
-.stat-num{font-size:24px;font-weight:700;color:var(--acc);}
-.stat-lbl{font-size:11px;color:var(--mut);margin-top:4px;}
-.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;padding:14px;}
-.week-day{display:flex;flex-direction:column;align-items:center;gap:5px;}
-.wd-lbl{font-size:10px;color:var(--mut);}
-.wd-dot{
-  width:32px;height:32px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:600;border:1.5px solid var(--bd);
-  background:var(--s2);color:var(--mut);
-}
-.wd-dot.today{border-color:var(--acc);color:var(--acc);background:rgba(139,127,247,.15);}
-.wd-dot.done{background:var(--grn);border-color:var(--grn);color:#0d0d14;}
-.sec-lbl{font-size:11px;color:var(--mut);letter-spacing:.06em;padding:14px 16px 4px;}
-.hist-row{padding:13px 16px;display:flex;justify-content:space-between;align-items:center;}
-.hist-note{padding:10px 16px;font-size:13px;color:var(--mut);line-height:1.6;border-top:1px solid var(--bd);}
-/* Info */
-.info-card{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:0 14px 10px;display:flex;gap:14px;align-items:flex-start;}
-.info-icon{font-size:24px;flex-shrink:0;}
-.info-title{font-size:14px;font-weight:700;margin-bottom:4px;}
-.info-desc{font-size:13px;color:var(--mut);line-height:1.65;}
-/* Note modal */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:50;display:none;align-items:flex-end;justify-content:center;}
-.overlay.show{display:flex;}
-.modal{
-  width:100%;max-width:480px;background:var(--s1);
-  border-radius:20px 20px 0 0;
-  padding:20px 18px calc(28px + var(--safe-bot));
-}
-.modal-handle{width:36px;height:4px;background:var(--bd);border-radius:100px;margin:0 auto 18px;}
-.modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-.modal-title{font-size:16px;font-weight:700;}
-.modal-close{background:none;border:none;color:var(--mut);font-size:24px;cursor:pointer;padding:0;line-height:1;}
-.note-ta{
-  width:100%;background:var(--s2);border:1.5px solid var(--bd);border-radius:10px;
-  color:var(--txt);padding:12px;font-size:15px;font-family:inherit;
-  resize:none;min-height:100px;outline:none;line-height:1.6;
-}
-.note-ta:focus{border-color:var(--acc);}
-.save-btn{
-  width:100%;padding:15px;border-radius:12px;border:none;
-  background:var(--acc);color:#fff;font-size:15px;font-weight:700;
-  cursor:pointer;font-family:inherit;margin-top:12px;
-}
-.guide-section{margin-bottom:16px;}
-.guide-section-title{font-size:12px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:10px;text-transform:uppercase;}
-.guide-step{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start;}
-.guide-step-num{width:22px;height:22px;border-radius:50%;background:var(--acc);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.guide-step-text{font-size:13px;line-height:1.6;color:var(--txt);}
-.guide-tip{display:flex;gap:8px;margin-bottom:7px;align-items:flex-start;}
-.guide-tip-icon{font-size:14px;flex-shrink:0;}
-.guide-tip-text{font-size:13px;line-height:1.6;color:var(--mut);}
-/* Backup modal */
-.backup-modal{
-  width:100%;max-width:480px;background:var(--s1);
-  border-radius:20px 20px 0 0;
-  padding:28px 20px calc(32px + var(--safe-bot));
-  text-align:center;
-}
-.backup-emoji{font-size:52px;margin-bottom:12px;}
-.backup-title{font-size:19px;font-weight:700;margin-bottom:8px;}
-.backup-sub{font-size:13px;color:var(--mut);line-height:1.65;margin-bottom:24px;}
-.backup-btn-main{width:100%;padding:15px;border-radius:12px;border:none;background:linear-gradient(135deg,#8b7ff7,#f0956a);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;}
-.backup-btn-skip{width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--bd);background:none;color:var(--mut);font-size:14px;cursor:pointer;font-family:inherit;}
+  html,body{margin:0;padding:0;height:100%;background:#0d0d14;-webkit-tap-highlight-color:transparent;}
+  #root{height:100vh;max-width:480px;margin:0 auto;overflow:hidden;}
+  *{box-sizing:border-box;}
+  input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:#8b7ff7;cursor:pointer;}
+  input[type="range"]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#8b7ff7;border:none;cursor:pointer;}
 </style>
 </head>
 <body>
-<div id="app">
-  <div id="screen">
-    <div class="page show" id="pg-today"></div>
-    <div class="page" id="pg-schedule"></div>
-    <div class="page" id="pg-stats"></div>
-    <div class="page" id="pg-info"></div>
-  </div>
-  <nav id="nav">
-    <button class="nav-btn on" id="nb-today" onclick="showTab('today')"><div class="nav-icon">⚡</div>今天</button>
-    <button class="nav-btn" id="nb-schedule" onclick="showTab('schedule')"><div class="nav-icon">📆</div>課表</button>
-    <button class="nav-btn" id="nb-stats" onclick="showTab('stats')"><div class="nav-icon">📈</div>紀錄</button>
-    <button class="nav-btn" id="nb-info" onclick="showTab('info')"><div class="nav-icon">🙋</div>我的</button>
-  </nav>
-</div>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const {useState,useEffect} = React;
 
-<div class="overlay" id="backup-overlay">
-  <div class="backup-modal">
-    <div class="backup-emoji">☁️</div>
-    <div class="backup-title">本週訓練結束！</div>
-    <div class="backup-sub" id="backup-sub-text">本週你完成了訓練，要備份這週的紀錄嗎？<br>建議存到 Google Drive 或 iCloud。</div>
-    <button class="backup-btn-main" onclick="doBackupAndClose()">📥 立即備份本週紀錄</button>
-    <button class="backup-btn-skip" onclick="snoozeBackup()">下次再說</button>
-  </div>
-</div>
 
-<div class="overlay" id="guide-overlay" onclick="if(event.target===this)closeGuide()">
-  <div class="modal" id="guide-modal">
-    <div class="modal-handle"></div>
-    <div class="modal-top">
-      <div class="modal-title" id="guide-title"></div>
-      <button class="modal-close" onclick="closeGuide()">×</button>
-    </div>
-    <div id="guide-body"></div>
-  </div>
-</div>
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-top">
-      <div class="modal-title">📝 今日備註</div>
-      <button class="modal-close" onclick="closeNote()">×</button>
-    </div>
-    <textarea class="note-ta" id="note-ta" placeholder="訓練感受、下次要調整的地方..."></textarea>
-    <button class="save-btn" onclick="saveNote()">儲存</button>
-  </div>
-</div>
+const C={bg:"#0d0d14",s1:"#161622",s2:"#1e1e2e",bd:"#2d2d42",acc:"#8b7ff7",acc2:"#f0956a",grn:"#4de8a0",txt:"#ddddf0",mut:"#5a5a78"};
+const GOALS=["🔥 減脂瘦身","💪 增肌塑形","⚡ 增肌減脂","🏃 提升體能","🏋️ 增加肌力","🧘 改善柔軟度","❤️ 維持健康","🏆 備賽競技"];
+const LEVELS=[{e:"🌱",n:"新手",d:"完全沒有運動習慣"},{e:"🌿",n:"初學",d:"偶爾運動，不規律"},{e:"🌳",n:"中級",d:"規律運動1年以上"},{e:"🏔️",n:"進階",d:"規律重訓3年以上"}];
+const INJURIES=["✅ 無","🦵 膝蓋","🔴 腰背","🫷 肩膀","❤️ 心血管","📝 其他"];
+const PLACES=["🏠 家中","🏢 健身房","🌳 戶外","🔄 兩者都有"];
+const EQUIPS=[{e:"🤸",n:"徒手"},{e:"🏋️",n:"啞鈴"},{e:"⚙️",n:"槓鈴架"},{e:"🔴",n:"彈力帶"},{e:"🫙",n:"壺鈴"},{e:"🏃",n:"跑步機"},{e:"🚴",n:"飛輪"},{e:"🚣",n:"划船機"},{e:"🏬",n:"全套器材"}];
+const DIETS=["🍽️ 無限制","🌱 素食","🌿 全素","🌾 無麩質","🥛 乳糖不耐","🥑 生酮","⏰ 斷食","💪 高蛋白"];
+const BMS=[{id:"squat",icon:"🦵",name:"深蹲",hint:"能做5下的最大重量",unit:"kg"},{id:"bench",icon:"🫸",name:"臥推",hint:"能做5下的最大重量",unit:"kg"},{id:"deadlift",icon:"⬆️",name:"硬舉",hint:"能做5下的最大重量",unit:"kg"},{id:"ohp",icon:"🙌",name:"肩推",hint:"能做5下的最大重量",unit:"kg"},{id:"row",icon:"🚣",name:"划船",hint:"能做8下的重量",unit:"kg"},{id:"pullup",icon:"🏋️",name:"引體向上",hint:"純徒手能做幾下",unit:"下"}];
+const DAYS=["一","二","三","四","五","六","日"];
 
-<script>
-// ── 課表資料 ──
-const SCHEDULE = [
-  {
-    title:"星期一・胸 / 肱三頭",
-    exercises:[
-      {name:"槓鈴臥推", sets:"4", reps:"8下", weight:"52.5 kg"},
-      {name:"上斜啞鈴臥推", sets:"3", reps:"10下", weight:"24 kg"},
-      {name:"繩索夾胸（下斜）", sets:"3", reps:"12下", weight:"15 kg"},
-      {name:"窄握臥推", sets:"3", reps:"10下", weight:"45 kg"},
-      {name:"滑輪下壓", sets:"3", reps:"12下", weight:"20 kg"},
-      {name:"懸吊捲腹", sets:"3", reps:"15下", weight:"自身體重"},
-    ],
-    cooldown:[
-      {name:"胸肌門框伸展", duration:"30秒×2側", note:"手臂扶門框，身體往前傾伸展胸肌"},
-      {name:"肩膀前側伸展", duration:"30秒×2側", note:"手臂往後伸，感受肩膀和胸肌前側拉伸"},
-      {name:"肱三頭過頭伸展", duration:"30秒×2側", note:"手臂舉過頭彎曲，另一手輕壓手肘"},
-      {name:"胸椎泡棉滾筒放鬆", duration:"1-2分鐘", note:"滾輪放在上背，緩慢前後滾動放鬆胸椎"},
-    ]
-  },
-  {
-    title:"星期二・背 / 肱二頭",
-    exercises:[
-      {name:"硬舉", sets:"4", reps:"6下", weight:"87.5 kg"},
-      {name:"引體向上", sets:"4", reps:"6下", weight:"自身體重"},
-      {name:"槓鈴划船", sets:"4", reps:"8下", weight:"60 kg"},
-      {name:"單手啞鈴划船", sets:"3", reps:"10下", weight:"28 kg"},
-      {name:"坐姿繩索划船", sets:"3", reps:"12下", weight:"45 kg"},
-      {name:"啞鈴彎舉", sets:"3", reps:"12下", weight:"14 kg"},
-    ],
-    cooldown:[
-      {name:"闊背肌懸吊伸展", duration:"30秒×2次", note:"抓住單槓讓身體懸掛放鬆，感受背部拉伸"},
-      {name:"貓牛式", duration:"10下×2組", note:"四足跪姿，配合呼吸活動脊椎放鬆下背"},
-      {name:"兒童式", duration:"45秒×2次", note:"跪坐後身體前傾趴下，雙手往前伸展背部"},
-      {name:"肱二頭壁面伸展", duration:"30秒×2側", note:"手掌貼牆掌心朝外，身體微轉伸展手臂前側"},
-    ]
-  },
-  {
-    title:"星期三・腿（蹲主）",
-    exercises:[
-      {name:"背蹲舉", sets:"4", reps:"6下", weight:"82.5 kg"},
-      {name:"保加利亞分腿蹲", sets:"3", reps:"10下/腳", weight:"20 kg"},
-      {name:"腿推機", sets:"3", reps:"12下", weight:"120 kg"},
-      {name:"腿彎舉", sets:"3", reps:"12下", weight:"40 kg"},
-      {name:"站姿提踵", sets:"4", reps:"15下", weight:"60 kg"},
-      {name:"側棒式", sets:"3", reps:"30秒/側", weight:"—"},
-    ],
-    cooldown:[
-      {name:"股四頭肌站姿伸展", duration:"30秒×2側", note:"單腳站立，另一腳往後彎，手握腳踝貼近臀部"},
-      {name:"大腿後側坐姿伸展", duration:"30秒×2側", note:"坐地一腳伸直，身體往前傾感受腿後腱拉伸"},
-      {name:"髖屈肌弓步伸展", duration:"30秒×2側", note:"弓步姿勢，後腳膝蓋著地，重心往前伸展"},
-      {name:"大腿泡棉滾筒放鬆", duration:"1-2分鐘", note:"前側、後側、外側各放鬆，找痠痛點停留"},
-      {name:"小腿拉筋", duration:"30秒×2側", note:"腳尖頂牆或踩踏板邊緣，腳跟往下壓"},
-    ]
-  },
-  {
-    title:"星期四・肩 / 手臂",
-    exercises:[
-      {name:"槓鈴肩推（坐姿）", sets:"4", reps:"8下", weight:"30 kg"},
-      {name:"啞鈴側平舉", sets:"4", reps:"12下", weight:"10 kg"},
-      {name:"繩索面拉", sets:"3", reps:"15下", weight:"12.5 kg"},
-      {name:"啞鈴前平舉", sets:"3", reps:"12下", weight:"10 kg"},
-      {name:"錘式彎舉", sets:"3", reps:"12下", weight:"14 kg"},
-      {name:"過頭肱三頭伸展", sets:"3", reps:"12下", weight:"16 kg"},
-    ],
-    cooldown:[
-      {name:"肩膀跨胸伸展", duration:"30秒×2側", note:"一手橫跨胸前，另一手輕壓手肘往身體方向"},
-      {name:"肩膀後側伸展", duration:"30秒×2側", note:"手臂往對側伸，感受後三角和旋轉肌伸展"},
-      {name:"頸部側傾伸展", duration:"30秒×2側", note:"頭往一側傾，感受頸部和斜方肌上束拉伸"},
-      {name:"手腕旋轉放鬆", duration:"10圈×2方向", note:"雙手握拳，慢慢旋轉放鬆手腕關節"},
-    ]
-  },
-  {
-    title:"星期五・腿（鉸鏈）＋核心",
-    exercises:[
-      {name:"羅馬尼亞硬舉", sets:"4", reps:"8下", weight:"80 kg"},
-      {name:"腿推機（窄距）", sets:"3", reps:"12下", weight:"100 kg"},
-      {name:"臀推", sets:"4", reps:"10下", weight:"80 kg"},
-      {name:"腿彎舉", sets:"3", reps:"12下", weight:"35 kg"},
-      {name:"滾輪捲腹", sets:"3", reps:"10下", weight:"自身體重"},
-      {name:"農夫走路", sets:"3", reps:"20公尺", weight:"28 kg"},
-    ],
-    cooldown:[
-      {name:"臀肌鴿式伸展", duration:"45秒×2側", note:"一腳橫放在前，另腳往後伸，上身前傾深度伸展臀肌"},
-      {name:"大腿後側站姿伸展", duration:"30秒×2側", note:"單腳踩在椅子上，身體往前傾伸展腿後腱"},
-      {name:"下背貓牛放鬆", duration:"10下×2組", note:"四足跪姿，特別放慢速度感受腰椎活動"},
-      {name:"臀部泡棉滾筒放鬆", duration:"1分鐘×2側", note:"坐在滾筒上，單側重心，找臀部痠痛點停留"},
-      {name:"腹部蛇式伸展", duration:"20秒×3次", note:"趴地雙手撐起上半身，伸展腹肌和腰椎前側"},
-    ]
-  },
-  {
-    title:"星期六・休息",
-    exercises:[],
-    cooldown:[]
-  },
-  {
-    title:"星期日・休息",
-    exercises:[],
-    cooldown:[]
-  }
+// 一週四練｜含注意事項與動作分解（依 8RM 100kg 校正深蹲，其餘沿用原基準）
+const DEFAULT_SCHEDULE=[
+  {title:"週一｜下肢（深蹲主導）＋核心",exercises:[
+    {name:"深蹲",sets:"暖身2+Top1+Backoff2",reps:"皆5下",weight:"60/75→95-100→85-90kg",
+      note:"膝蓋方向與腳尖一致避免內夾；髖低於膝再起身；下蹲前吸氣繃緊核心；發力在臀部與股四頭，避免下背代償",
+      steps:["槓鈴置於上背斜方肌（高槓）或後三角肌（低槓），雙手略寬於肩握槓","站距與肩同寬或略寬，腳尖微外八15-30度","起槓後退2-3步站穩，吸一大口氣，腹部繃緊如同準備被打一拳","屁股先往後坐，同時膝蓋順著腳尖方向彎曲，重心維持在腳掌中段","下蹲至髖關節低於膝蓋（或至少大腿與地面平行）","由臀部與大腿發力，像把地板往下踩的感覺站起","站直鎖定膝蓋與髖關節，吐氣，準備下一次"]},
+    {name:"腿推",sets:"4",reps:"10下",weight:"依機台調整",
+      note:"腳掌與肩同寬置於踏板中上方，避免膝蓋過度前移超過腳尖；下降時全程控制，臀部不離開椅背",
+      steps:["坐進機台，背部與臀部完全貼緊椅背","雙腳踩在踏板上，與肩同寬，位置偏中上方","鬆開安全卡榫，雙手輕扶握把穩定身體","緩慢彎曲膝蓋，讓踏板往身體方向下降，直到膝蓋約成90度","過程中膝蓋不內夾也不外開，跟腳尖同方向","用腳跟與腳掌發力推回起始位置，膝蓋不完全鎖死","完成組數後重新扣上安全卡榫再離開"]},
+    {name:"保加利亞分腿蹲",sets:"3",reps:"8下/邊",weight:"12-16kg啞鈴",
+      note:"前腳掌完全踩實，重心壓在前腳跟；後腳只是輔助平衡不出力；發力在前腳臀肌",
+      steps:["雙手各持一啞鈴，站在長凳/台子前方約一步半距離","一腳腳背輕放在身後的長凳上，前腳站穩支撐身體","上半身保持直立或微前傾，核心收緊","前腳屈膝下蹲，後膝往地面靠近但不觸地","下蹲過程重心放在前腳跟，感受前腳臀部與大腿出力","用前腳蹬地站起回到起始位置","完成單邊次數後換邊"]},
+    {name:"腿彎舉",sets:"3",reps:"12下",weight:"依機台調整",
+      note:"全程骨盆貼緊椅墊避免腰部代償甩動；收縮頂點停頓1秒",
+      steps:["俯臥於機台上，腳踝掛勾對準小腿後側墊枕上緣","雙手握住機台把手固定身體","骨盆與腹部貼緊椅墊，不可拱起","用膕繩肌（大腿後側）發力，將小腿往臀部方向彎曲","到頂端時停頓1秒，感受完全收縮","緩慢控制放回起始位置，不讓重量瞬間落下"]},
+    {name:"站姿小腿提踵",sets:"3",reps:"15下",weight:"依機台調整",
+      note:"頂端停頓1-2秒完全收縮，下降到腳跟低於踏板感受完整伸展",
+      steps:["站上機台，肩膀墊靠在肩墊下，前腳掌踩在踏板邊緣","腳跟懸空於踏板外","緩慢下降腳跟，讓小腿完全伸展拉長","用小腿力量將身體往上推，踮起腳尖到最高點","頂端停頓1-2秒感受收縮","緩慢下放回起始位置，避免快速彈震"]},
+    {name:"平板支撐",sets:"3",reps:"45秒",weight:"—",
+      note:"肩膀正對手肘下方，臀部不上翹或下塌，全程收緊腹部與臀部",
+      steps:["俯臥，手肘撐地，手肘位置在肩膀正下方","腳尖踩地，雙腳與髖同寬或併攏","抬起身體讓頭、肩、髖、腳踝呈一直線","收緊腹部與臀部，避免腰部下塌或臀部過高","正常呼吸維持姿勢至時間結束"]},
+    {name:"懸吊抬腿",sets:"3",reps:"12下",weight:"—",
+      note:"避免擺盪借力，骨盆後傾捲起而非只靠髖屈肌甩腿，下放不完全放鬆",
+      steps:["雙手抓握單槓或使用吊帶懸掛身體","身體自然懸空，避免大幅度晃動","收緊腹部，將骨盆向後捲，帶動雙腿向上抬起","抬到大腿接近與地面平行，或更高至90度以上","緩慢控制放下雙腿，接近底部時保持腹部張力不完全放鬆","重複動作，過程中避免用腰部甩動借力"]},
+  ]},
+  {title:"週二｜上肢推（胸／肩／三頭）",exercises:[
+    {name:"臥推",sets:"暖身2+Top1+Backoff2",reps:"皆5下",weight:"45/55→63-65→56-59kg",
+      note:"肩胛骨主動下沉夾緊固定椅面；下背維持自然拱度；槓鈴下降至胸口中下方；發力時想像蹬地",
+      steps:["平躺於臥推椅，眼睛約在槓鈴正下方","雙手略寬於肩握槓，虎口朝上","肩胛骨向後夾緊並下沉，固定在椅面上","雙腳踩穩地面，製造穩定支撐","起槓後移到胸口正上方，吸氣緩慢下降","槓鈴輕觸胸口中下方，手肘約呈45度角，不完全外展90度","用胸部與三頭發力推起，同時感覺雙腳蹬地產生的穩定力","手臂伸直但不鎖死，吐氣，回到起始位置重複"]},
+    {name:"肩推",sets:"4",reps:"8下",weight:"36-38kg",
+      note:"核心繃緊避免下背過度後仰；槓鈴軌跡貼近臉部前方；頂端手臂伸直不鎖死",
+      steps:["站姿或坐姿，握槓於肩膀前方，虎口朝上，略寬於肩","核心收緊，避免下背過度後仰代償","吸氣，將槓鈴沿臉部前方路徑向上推起","推到頭頂正上方，手臂完全伸直但不鎖死關節","吐氣，緩慢控制放回肩膀起始位置","重複動作，過程中避免用腰部甩動借力"]},
+    {name:"上斜啞鈴臥推",sets:"3",reps:"10下",weight:"依重量調整",
+      note:"椅背角度30-45度即可；下降時感受上胸拉伸；避免啞鈴互相碰撞失去張力",
+      steps:["調整臥推椅至30-45度角","雙手各持啞鈴，坐上椅子後平躺，啞鈴置於肩膀兩側","雙腳踩穩地面，肩胛骨夾緊固定","將啞鈴向上推起，於胸口正上方伸直手臂（不互相碰撞）","緩慢下降啞鈴至上胸兩側，感受胸部上緣拉伸","保持張力再次推起，重複動作"]},
+    {name:"側平舉",sets:"3",reps:"12下",weight:"依重量調整",
+      note:"手肘微彎固定角度，上抬至與肩同高即可，避免聳肩；用手肘帶動而非手腕甩動",
+      steps:["站姿，雙手各持一啞鈴自然垂放於身體兩側","手肘保持微彎，固定這個角度整組動作不變","用三角肌側束發力，將雙臂向兩側抬起","抬到與肩同高即可，不要聳肩","頂端停頓一瞬間，感受側肩收縮","緩慢下放回起始位置，不讓重量快速落下"]},
+    {name:"三頭肌下壓",sets:"3",reps:"12下",weight:"依重量調整",
+      note:"手肘固定貼緊身體兩側不外張，只有前臂動作；下壓到底完全伸直鎖緊",
+      steps:["站在滑輪機前，雙手握住繩索或直桿把手，手肘彎曲貼緊身體兩側","上臂固定不動，只用前臂做動作","用三頭肌發力，將把手向下壓直到手臂完全伸直","頂端停頓感受三頭完全收縮","緩慢控制回到起始彎曲位置，過程中手肘不離開身體兩側"]},
+    {name:"過頭三頭伸展",sets:"3",reps:"10下",weight:"依重量調整",
+      note:"手肘朝前固定不外開，下放時感受三頭拉伸但避免肩膀代償前送",
+      steps:["坐姿或站姿，雙手共同握住一個啞鈴或使用繩索把手，舉至頭頂上方","手肘朝向正前方，固定不外開","緩慢彎曲手肘，讓重量下降至頭後方，感受三頭肌拉伸","手肘位置全程保持固定，避免向外張開或向前移動","用三頭肌發力將重量推回頭頂伸直位置"]},
+  ]},
+  {title:"週三｜休息",exercises:[]},
+  {title:"週四｜下肢（髖鉸鏈主導）＋核心",exercises:[
+    {name:"硬舉",sets:"暖身2+Top1+Backoff2",reps:"皆5下",weight:"70/90→108-112→96-102kg",
+      note:"起槓前槓貼緊脛骨，背部打直非駝背；用腿推地而非用背拉；發力在臀部與後側鏈",
+      steps:["站於槓鈴前，腳與髖同寬，槓鈴貼近脛骨","屈髖屈膝下蹲握槓，雙手略寬於肩，握距在膝蓋外側","挺胸、背部打直，肩膀略在槓鈴前方，視線平視前方","吸氣繃緊核心，先用雙腿蹬地的力量將槓鈴拉離地面","槓鈴貼近身體上升，過程中髖與肩同步伸展上升","站直時臀部夾緊，肩膀後收，全身呈直立狀態","緩慢將槓鈴沿相同路徑放回地面，過程中保持背部打直"]},
+    {name:"羅馬尼亞硬舉",sets:"4",reps:"8下",weight:"65kg",
+      note:"膝蓋微彎固定角度全程不變，靠髖關節前傾；槓鈴貼近大腿下滑",
+      steps:["雙手握槓站立，與硬舉起始站姿類似，膝蓋微彎固定","核心收緊，背部打直","髖關節主動向後推，上半身隨之前傾，槓鈴貼近大腿前側下滑","下降至感受膕繩肌明顯拉伸，膝蓋角度不再增加","用臀部與膕繩肌發力，將髖關節向前推回站直","全程膝蓋角度固定，只靠髖關節做動作"]},
+    {name:"臀推",sets:"3",reps:"10下",weight:"依重量調整",
+      note:"上背靠穩在長凳邊緣，頂端夾緊臀部停頓1秒，避免下背過度伸展代償",
+      steps:["上背部（肩胛骨下緣）靠在長凳邊緣，雙腳踩地屈膝，槓鈴或重量置於髖部上方","雙腳與肩同寬，腳跟略靠近臀部","收緊核心，用臀部發力將髖部向上推起","推到身體呈一直線（肩-髖-膝），頂端夾緊臀部停頓1秒","緩慢下放髖部回到起始位置，避免完全坐地失去張力"]},
+    {name:"俯臥腿彎舉",sets:"3",reps:"12下",weight:"依機台調整",
+      note:"骨盆貼緊墊子不上抬，收縮時停頓感受完全收緊",
+      steps:["俯臥於機台，腳踝掛勾對準小腿後側墊枕","骨盆與腹部緊貼墊子","用膕繩肌發力將小腿往臀部方向彎曲","頂端停頓感受完全收縮，過程中骨盆不可離開墊子上抬","緩慢控制放回起始位置"]},
+    {name:"早安體前屈",sets:"3",reps:"10下",weight:"依重量調整（建議輕重量）",
+      note:"重量要輕，膝蓋微彎固定，髖關節主導前傾，背部全程打直不可駝背",
+      steps:["槓鈴輕放於上背，雙腳與肩同寬站立","膝蓋微彎固定角度，全程不變","核心收緊，背部打直，髖關節主動向後推，身體前傾","前傾至上半身接近與地面平行，或感受膕繩肌明顯拉伸即可停止","用臀部與膕繩肌發力將身體拉回站直","全程注意背部絕不可駝背彎曲，重量務必先從很輕開始練習"]},
+    {name:"死蟲式",sets:"3",reps:"12下/邊",weight:"—",
+      note:"下背全程貼緊地面不可拱起，對側手腳緩慢伸展再收回，動作要慢才有效",
+      steps:["仰臥，雙手向上伸直指向天花板，雙腿屈髖屈膝呈90度","下背緊貼地面，收緊腹部維持這個貼地狀態","緩慢將一側手臂向後伸展至頭頂上方，同時對側腳向前伸直，接近貼地但不觸地","過程中下背絕不可離地拱起","緩慢收回至起始位置，換另一側重複"]},
+    {name:"側平板",sets:"3",reps:"30秒/邊",weight:"—",
+      note:"肩膀在手肘正上方，身體呈一直線不塌腰不翹臀，核心側邊持續出力",
+      steps:["側躺，手肘撐地位於肩膀正下方，雙腳疊放或前後交錯站立","抬起髖部，讓身體從頭到腳呈一直線","收緊腹部側邊（腹斜肌），避免髖部下塌或過度上翹","維持姿勢正常呼吸至時間結束，換邊重複"]},
+  ]},
+  {title:"週五｜上肢拉（背／二頭）",exercises:[
+    {name:"引體向上",sets:"5",reps:"力竭",weight:"徒手",
+      note:"起始完全懸吊伸直手臂，拉起時手肘往後下方帶動；避免甩動借力，下放全程控制",
+      steps:["雙手握單槓，握距略寬於肩，虎口朝外（正握）","身體自然懸吊，手臂完全伸直，肩胛骨放鬆下沉","吸氣，用背闊肌發力，手肘向後下方帶動身體向上拉起","拉至下巴超過槓面或胸口接近槓的高度","緩慢控制下放回完全伸直的懸吊姿勢，感受背部拉伸","避免用腿部擺盪或身體甩動借力，力竭前保持動作品質"]},
+    {name:"槓鈴划船",sets:"4",reps:"8下",weight:"55kg",
+      note:"上半身固定前傾角度約45度全程不變；拉起時手肘貼近身體往後帶，擠壓肩胛骨",
+      steps:["雙腳與肩同寬站立，屈髖屈膝，上半身前傾約45度","雙手握槓，略寬於肩，手臂自然下垂","核心收緊，背部打直，固定這個前傾角度不再變動","用背部發力，手肘貼近身體向後上方拉起槓鈴，靠近腹部","頂端擠壓肩胛骨，停頓一瞬間","緩慢控制放下槓鈴回到起始伸直位置"]},
+    {name:"滑輪下拉",sets:"3",reps:"10下",weight:"依機台調整",
+      note:"身體不過度後仰借力，下拉至鎖骨前方，感受背闊肌收縮而非只是手臂彎曲",
+      steps:["坐於機台，大腿固定於墊枕下，雙手握住橫桿，寬握距","上半身保持略微後傾即可，不要過度後仰借力","用背闊肌發力，將橫桿向下拉至鎖骨前方","過程中手肘往身體兩側下方帶，感受背部收縮而非只是手臂彎曲","緩慢控制放回起始向上伸直位置"]},
+    {name:"坐姿划船",sets:"3",reps:"12下",weight:"依機台調整",
+      note:"拉起時挺胸夾背，避免聳肩用斜方肌代償；手把拉近腹部而非胸口",
+      steps:["坐於機台，雙腳踩踏板，膝蓋微彎，雙手握住把手","上半身保持直立，核心收緊","用背部發力，將把手向後拉近腹部，過程中肩膀不聳起","拉到底時挺胸、肩胛骨夾緊","緩慢控制放回起始伸直位置，感受背部拉伸"]},
+    {name:"槓鈴彎舉",sets:"3",reps:"10下",weight:"依重量調整",
+      note:"手肘固定貼緊身體兩側，避免用身體擺盪借力甩起槓鈴",
+      steps:["站姿，雙手握槓，與肩同寬，手臂自然下垂，槓鈴貼近大腿前方","手肘固定貼緊身體兩側，全程不前後移動","用二頭肌發力，將槓鈴向上彎舉至肩膀前方","頂端停頓感受完全收縮","緩慢控制放下回到起始伸直位置，避免用腰部或肩膀擺盪借力"]},
+    {name:"錘式彎舉",sets:"3",reps:"12下",weight:"依重量調整",
+      note:"手掌中立握法（虎口朝上），手肘不前後移動，感受肱橈肌與肱肌發力",
+      steps:["站姿，雙手各持一啞鈴，虎口朝上（中立握法），自然垂放於身體兩側","手肘固定貼緊身體兩側，不前後移動","用前臂肱橈肌與肱肌發力，將啞鈴向上彎舉至肩膀前方","頂端停頓感受收縮","緩慢放下回到起始位置，維持手掌中立握法全程不轉動"]},
+  ]},
+  {title:"週六｜休息",exercises:[]},
+  {title:"週日｜休息",exercises:[]},
 ];
 
-const DAYS_LABEL = ["一","二","三","四","五","六","日"];
-const DB = "fitapp_v5";
+function todayStr(){return new Date().toISOString().slice(0,10);}
 
-const EXERCISE_GUIDE = {
-  "槓鈴臥推":{
-    steps:["躺在臥推椅上，眼睛對準槓鈴正下方","雙手握距略寬於肩，握槓後深吸一口氣撐緊核心","槓鈴下放至胸口（乳頭位置），手肘約45度角","胸肌發力將槓鈴推回，鎖骨前不要完全鎖死"],
-    tips:["下背保持微弓，不要完全貼平椅面","腳踩穩地板，不要懸空","下放時不要彈胸，要有控制地觸胸"]
-  },
-  "上斜啞鈴臥推":{
-    steps:["椅背調至30-45度，躺好後啞鈴置於大腿","用大腿彈力將啞鈴舉起，調整至胸口兩側","深吸氣，啞鈴下放至胸口上方（鎖骨附近）","胸肌發力往斜上方推起，頂端略靠攏但不碰觸"],
-    tips:["重點刺激上胸，不要讓肩膀代償","下放角度是斜後方，不是直接往旁邊","重量比平臥推輕20-30%是正常的"]
-  },
-  "繩索夾胸（下斜）":{
-    steps:["滑輪調至高位，雙手握把站在中間","上半身微前傾，手肘微彎保持固定","雙臂往斜下方交叉夾合，感受胸肌中縫收縮","緩慢回到起始位置，感受胸肌被拉伸"],
-    tips:["動作過程手肘角度不要改變","夾到底時停頓1秒感受收縮","這是孤立動作，用輕重量做好感受"]
-  },
-  "窄握臥推":{
-    steps:["握距與肩同寬或略窄，握槓下方","槓鈴下放至胸口下方（肚臍偏上）","手肘貼近身體兩側，不要外展","肱三頭肌發力推起"],
-    tips:["握距太窄會傷手腕，不需要極度窄握","感受重點在手臂後側肱三頭肌","胸肌參與度低於一般臥推是正常的"]
-  },
-  "滑輪下壓":{
-    steps:["滑輪調至高位，雙手握繩或直桿","上半身微前傾，上臂夾緊固定在身側","前臂往下壓至手臂完全伸直","緩慢回到起始位置，感受肱三頭被拉伸"],
-    tips:["上臂不要晃動，固定是關鍵","下壓到底時停頓收縮1秒","可以單手做加強孤立感"]
-  },
-  "懸吊捲腹":{
-    steps:["雙手抓住單槓或吊環懸掛","膝蓋彎曲往胸口方向捲起","腹肌收縮讓骨盆後傾，不只是抬腿","緩慢下放，不要甩動"],
-    tips:["重點是骨盆後傾的捲曲動作，不是直接抬腿","如果太難可以先從抬膝開始","不要藉助擺盪慣性"]
-  },
-  "硬舉":{
-    steps:["槓鈴放腳背上方，站距與髖同寬","屈髖屈膝蹲下，雙手握槓略寬於腿","深吸氣撐緊核心，背部保持中立位","腿推地板同時髖部往前推，槓鈴沿小腿拉起","站直後肩膀往後夾，完成動作"],
-    tips:["起始動作最重要：下背不能圓背","槓鈴要緊貼腿部拉，不要往外飄","重量大時用混合握（一正一反）或助力帶"]
-  },
-  "引體向上":{
-    steps:["雙手握槓略寬於肩，掌心朝外","身體懸掛，肩胛下壓啟動背部","彎曲手肘將身體拉起至下巴過槓","緩慢下放，手臂完全伸直再做下一下"],
-    tips:["靠背肌發力，不是靠手臂硬拉","想像把手肘往腰部方向拉","如果做不到4下，可先用輔助機或彈力帶"]
-  },
-  "槓鈴划船":{
-    steps:["屈髖前傾約45度，背部保持中立","雙手正握槓鈴，握距略寬於肩","將槓鈴拉向肚臍方向，手肘往後拉","頂端夾緊背部，緩慢下放"],
-    tips:["不要用腰部彈動借力","上半身角度全程保持一致","感受重點在背部中段菱形肌"]
-  },
-  "單手啞鈴划船":{
-    steps:["一手一腳撐在椅子上，身體平行地面","另一手握啞鈴自然垂下","將啞鈴拉向腰部，手肘往天花板方向","頂端背肌收縮停頓，緩慢下放"],
-    tips:["不要旋轉身體借力","肩胛骨要有收縮和下放的動作","重量可以比想像中重，背肌力量大"]
-  },
-  "坐姿繩索划船":{
-    steps:["坐在划船機上，雙腳踩穩腳踏板","雙手握把，上半身微前傾伸展背部","上半身回正同時將握把拉向肚臍","手肘往後拉，夾緊背部後緩慢回放"],
-    tips:["不要用上半身前後擺動借力","回放時讓背部有完整的伸展","感受肩胛骨的收縮和打開"]
-  },
-  "啞鈴彎舉":{
-    steps:["站立或坐姿，雙手握啞鈴自然垂下","上臂固定在身側，前臂往上彎舉","彎舉至頂端時手腕可稍微外旋","緩慢下放，手臂完全伸直"],
-    tips:["上臂不要往前擺動，要固定","下放要慢，離心收縮也很重要","可以交替或同時做"]
-  },
-  "背蹲舉":{
-    steps:["槓鈴放在斜方肌上（低槓）或後三角肌上（高槓）","站距與肩同寬或略寬，腳尖稍微外展","深吸氣撐緊核心，屈髖屈膝往下蹲","膝蓋順著腳尖方向，蹲至大腿平行地面","腿部發力站起，全程保持背部中立"],
-    tips:["膝蓋不要內扣，是最重要的安全原則","蹲下時重心在腳掌中央到腳跟","深度至少平行，有能力可以蹲更深"]
-  },
-  "保加利亞分腿蹲":{
-    steps:["後腳放在椅子或箱子上，前腳往前踏一大步","上半身保持直立，核心收緊","前腳屈膝往下蹲，後膝往地板方向","前腳發力站回，全程膝蓋對準腳尖"],
-    tips:["前腳距離要夠遠，膝蓋不要超過腳尖太多","這個動作對平衡要求高，先從輕重量開始","單腳訓練可以修正兩腿力量不平衡"]
-  },
-  "腿推機":{
-    steps:["坐在腿推機上，腳掌放在踏板中上方","屈膝讓踏板往下，大腿接近胸口","腿部發力將踏板推出，膝蓋不鎖死","緩慢下放回到起始位置"],
-    tips:["腳掌位置偏高可多練股四頭肌","下放時下背不要離開椅背","重量可以比深蹲重，但不要犧牲動作品質"]
-  },
-  "腿彎舉":{
-    steps:["趴在腿彎舉機上，腳踝放在滾輪下方","雙腿往上彎舉至90度以上","頂端收縮停頓，感受大腿後側","緩慢下放，腳踝不要完全放鬆"],
-    tips:["做動作時臀部不要離開椅墊","彎舉速度要慢，離心要有控制","可以單腳做，注意兩腳力量是否平衡"]
-  },
-  "站姿提踵":{
-    steps:["站在提踵機或踏板邊緣，前腳掌踩穩","腳跟盡量往下降，感受小腿完整伸展","用小腿力量將腳跟提起至最高點","頂端停頓1秒，緩慢下放"],
-    tips:["動作範圍要完整，上下都要到極限","小腿很耐操，組數和次數可以多","可以腳尖朝內/外變化刺激不同部位"]
-  },
-  "側棒式":{
-    steps:["側臥，用前臂和腳側撐起身體","身體從頭到腳保持一直線","核心用力，臀部不要下沉或上翹","維持規定時間，換邊重複"],
-    tips:["呼吸要保持正常，不要憋氣","如果太難可以先從膝蓋著地開始","進階可以加上抬腿或旋轉動作"]
-  },
-  "槓鈴肩推（坐姿）":{
-    steps:["坐在椅背垂直的椅子上，槓鈴置於頸前","握距略寬於肩，深吸氣撐緊核心","將槓鈴往正上方推起，手臂完全伸直","緩慢下放至下巴高度，不要放到鎖骨"],
-    tips:["下背不要過度後仰借力","全程核心收緊保護腰椎","站姿肩推對核心要求更高，可以漸進改為站姿"]
-  },
-  "啞鈴側平舉":{
-    steps:["雙手握啞鈴自然垂在身側","雙臂微彎，往兩側平舉至肩膀高度","手肘高度略高於手腕","緩慢下放，不要完全放鬆"],
-    tips:["不要用甩動借力，控制是關鍵","重量不需要很重，感受肩膀中束","小指可以稍微往上傾，增加刺激感"]
-  },
-  "繩索面拉":{
-    steps:["滑輪調至臉部高度，雙手握繩子兩端","手肘與肩同高，往後拉至臉部兩側","外旋肩膀，夾緊後三角和菱形肌","緩慢回到起始位置"],
-    tips:["這個動作對肩膀健康很重要","重量輕但要感受後肩和上背的收縮","每次訓練都建議做，可以改善駝背"]
-  },
-  "啞鈴前平舉":{
-    steps:["雙手握啞鈴自然垂在身前","雙臂微彎，往前舉至肩膀高度","頂端停頓，感受前三角收縮","緩慢下放"],
-    tips:["不要借助身體前後擺動","可以交替或同時做","前三角在臥推時已有訓練，不需要太重"]
-  },
-  "錘式彎舉":{
-    steps:["雙手握啞鈴，掌心相對（中立握）","上臂固定在身側，前臂往上彎舉","彎至頂端時肱肌和肱橈肌有感","緩慢下放"],
-    tips:["掌心相對是與一般彎舉的最大差異","主要訓練肱肌和肱橈肌，讓手臂更厚實","可以交替或同時做"]
-  },
-  "過頭肱三頭伸展":{
-    steps:["雙手握一個啞鈴舉過頭，雙手扣住一端","手肘彎曲讓啞鈴下放到頭部後方","肱三頭肌發力將啞鈴推回頭頂","全程上臂保持垂直地面"],
-    tips:["這個動作可以完整伸展肱三頭長頭","下放時手肘不要過度外展","可以坐著做，更容易保持上臂穩定"]
-  },
-  "羅馬尼亞硬舉":{
-    steps:["雙手握槓站立，膝蓋微彎不要鎖死","屈髖將上半身往前傾，背部保持中立","槓鈴沿大腿前側往下滑，感受大腿後側伸展","屈髖肌發力，上半身回到直立"],
-    tips:["這是髖鉸鏈動作，不是深蹲","感受大腿後側（腿後腱）的拉伸才是對的","槓鈴不需要碰地，下放到感受到緊繃即可"]
-  },
-  "臀推":{
-    steps:["上背靠在椅子邊緣，槓鈴放在髖部","腳踩地，與肩同寬，小腿盡量垂直地面","臀部發力往上推，推至髖部完全伸展","頂端夾緊臀部停頓，緩慢下放"],
-    tips:["下巴收，眼睛看斜前方，不要過度仰頭","推到頂端時脊椎保持中立，不要過度伸展腰椎","可以在槓鈴下加海綿墊保護髖骨"]
-  },
-  "滾輪捲腹":{
-    steps:["跪地，雙手握滾輪放在膝蓋前方","核心收緊，身體往前滾出，手臂往前伸","滾到快要趴下前停住","用腹肌收縮將身體捲回起始位置"],
-    tips:["這個動作難度很高，先從小範圍開始","下背不能塌陷，全程核心要撐緊","如果太難先練棒式和捲腹打好基礎"]
-  },
-  "農夫走路":{
-    steps:["雙手各握一個啞鈴或壺鈴","站直，肩膀往後往下夾，核心收緊","小步伐穩定地走規定距離","保持身體直立，不要傾斜"],
-    tips:["重量盡量重，這才能訓練到握力和核心","步伐不要太大，保持穩定","肩膀要主動維持穩定，不要讓重量把你往下拉"]
-  },
-  "腿推機（窄距）":{
-    steps:["坐在腿推機上，雙腳靠近踏板中間窄站距","屈膝讓踏板往下，大腿接近胸口","雙腿發力推出，膝蓋不鎖死","緩慢下放回起始位置"],
-    tips:["窄站距讓外側股四頭肌（股外側肌）更有感","膝蓋對準腳尖方向，不要內扣","重量比寬站距輕一些是正常的"]
-  },
-  "泡棉滾筒放鬆":{
-    steps:["將滾筒放在目標肌肉下方","用體重在滾筒上緩慢滾動","找到痠痛點停留15-30秒","全身主要肌群都可以放鬆"],
-    tips:["不要在關節上滾","酸痛點停留放鬆效果更好","放鬆後可以接著做靜態伸展"]
-  },
-  "髖屈肌伸展":{
-    steps:["單膝跪地（弓步姿勢）","後腳膝蓋著地，前腳踩穩","身體直立，重心往前移","感受後腳大腿前側和鼠蹊部的伸展"],
-    tips:["不要讓腰部過度後仰代償","可以用手扶牆保持平衡","每側維持30秒以上效果較佳"]
-  },
-  "胸椎旋轉":{
-    steps:["側臥，雙膝彎曲疊在一起，雙手往前伸直","上方手臂往後旋轉，帶動胸椎轉動","眼睛跟著手轉，讓上背盡量貼地","緩慢回到起始位置，換邊重複"],
-    tips:["腰椎不要跟著轉，固定下半身","呼吸配合動作，轉到底時吐氣","活動度不足時不要勉強，慢慢進步"]
-  },
-  "腳踝活動度":{
-    steps:["站立，單腳往前踩，膝蓋往腳尖方向推","讓膝蓋盡量超過腳尖，腳跟不離地","往內、外、正前方各做幾圈","換腳重複"],
-    tips:["腳跟一定要踩穩，不能離地","這個動作可以改善深蹲的腳踝限制","每天做效果更明顯"]
-  },
-  "貓牛式":{
-    steps:["四足跪姿，手腕在肩膀正下方，膝蓋在髖正下方","吸氣時肚子往下沉，頭往上看（牛式）","吐氣時背部往上拱，頭往下看（貓式）","緩慢交替，配合呼吸節奏"],
-    tips:["動作要緩慢，感受每節脊椎的活動","早起或訓練前做都很適合","有助於放鬆腰背部僵硬"]
-  },
-};
-
-
-
-// ── State ──
-let logs = {};
-let currentTab = "today";
-let schedIdx = 0;
-
-function load(){
-  try{ const d=JSON.parse(localStorage.getItem(DB)||"null"); if(d) logs=d.logs||{}; }catch(e){}
-}
-function persist(){
-  try{ localStorage.setItem(DB, JSON.stringify({logs})); }catch(e){}
-}
-function todayStr(){ return new Date().toISOString().slice(0,10); }
-function getLog(){ return logs[todayStr()]||(logs[todayStr()]={exercises:{},dayNote:""}); }
-function todayIdx(){
-  return [6,0,1,2,3,4,5][new Date().getDay()] % SCHEDULE.length;
-}
-
-// ── Navigation ──
-function showTab(t){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
-  document.getElementById('pg-'+t).classList.add('show');
-  document.getElementById('nb-'+t).classList.add('on');
-  currentTab = t;
-  if(t==='today') renderToday();
-  if(t==='schedule') renderSchedule();
-  if(t==='stats') renderStats();
-  if(t==='info') renderInfo();
-  document.getElementById('screen').scrollTop=0;
-}
-
-// ── Ring SVG ──
-function ringHTML(pct){
-  const r=22, circ=2*Math.PI*r;
-  const col = pct===100 ? 'var(--grn)' : 'var(--acc)';
-  const dash = `${pct/100*circ} ${circ}`;
-  return `<div class="ring-wrap">
-    <svg width="56" height="56" viewBox="0 0 56 56">
-      <circle cx="28" cy="28" r="${r}" fill="none" stroke="var(--bd)" stroke-width="5"/>
-      <circle cx="28" cy="28" r="${r}" fill="none" stroke="${col}" stroke-width="5"
-        stroke-linecap="round" stroke-dasharray="${dash}"/>
-    </svg>
-    <div class="ring-center" style="color:${col}">${pct}%</div>
-  </div>`;
-}
-
-// ── TODAY ──
-function renderToday(){
-  try{
-  const now = new Date();
-  const h = now.getHours();
-  const greet = h<12?"早安 ☀️":h<17?"午安 🌤️":"晚上好 🌙";
-  const dateStr = `${now.getMonth()+1}月${now.getDate()}日（週${["日","一","二","三","四","五","六"][now.getDay()]}）`;
-  const idx = todayIdx();
-  const day = SCHEDULE[idx];
-  const log = getLog();
-  const exs = day.exercises;
-  const doneCount = exs.filter((_,i)=>log.exercises[i]?.done).length;
-  const pct = exs.length>0 ? Math.round(doneCount/exs.length*100) : 100;
-
-  let html = `
-  <div class="topbar">
-    <div><div class="topbar-sub">${greet}</div><div class="topbar-title">${dateStr}</div></div>
-    <button onclick="openNote()" style="background:none;border:none;color:var(--mut);font-size:22px;cursor:pointer">📝</button>
-  </div>
-  <div class="banner">
-    <div>
-      <div class="banner-title">${day.title}</div>
-      <div class="banner-sub">${doneCount}/${exs.length} 個動作完成</div>
-      ${log.dayNote?`<div class="banner-note">📝 ${log.dayNote}</div>`:''}
-    </div>
-    ${ringHTML(pct)}
-  </div>`;
-
-  if(exs.length===0){
-    html += `<div class="card"><div class="rest-card">
-      <div class="rest-emoji">🧘</div>
-      <div class="rest-text">今天是休息日</div>
-      <div class="rest-sub" style="color:var(--mut)">好好恢復，明天繼續！</div>
-    </div></div>`;
-  } else {
-    // Checklist
-    html += `<div class="card"><div class="card-head">
-      <span class="card-head-icon">✅</span>
-      <span class="card-head-title">今日動作</span>
-      ${pct===100?`<span class="badge badge-done">全部完成 🎉</span>`:''}
-    </div>`;
-    exs.forEach((ex,i)=>{
-      const done = log.exercises[i]?.done;
-      const actual = log.exercises[i];
-      html += `<div class="ex-row${done?' done':''}">
-        <div class="ex-check${done?' checked':''}" onclick="toggleEx(${i})"><span class="check-mark">✓</span></div>
-        <div style="flex:1" onclick="toggleEx(${i})">
-          <div class="ex-name">${ex.name}</div>
-          <div class="ex-detail">${ex.sets}組 × ${ex.reps}
-            ${actual?.actualSets?`<span style="color:var(--grn)"> · 實際 ${actual.actualSets}組 ${actual.actualWeight||''}kg</span>`:''}
-          </div>
-        </div>
-        <button class="info-btn" onclick="openGuide('${ex.name.replace(/'/g,"\\'")}')">📖 教學</button>
-        <div class="ex-weight" onclick="toggleEx(${i})">${ex.weight}</div>
-      </div>`;
-    });
-    html += `</div>`;
-
-    // Log
-    html += `<div class="card"><div class="card-head">
-      <span class="card-head-icon">📊</span>
-      <span class="card-head-title">即時紀錄</span>
-    </div>`;
-    exs.forEach((ex,i)=>{
-      const lg = log.exercises[i]||{};
-      html += `<div class="log-row">
-        <div class="log-label">${ex.name} <span style="color:var(--acc)">${ex.weight}</span>
-          <span style="color:var(--mut);font-weight:400"> · 計畫 ${ex.sets}組×${ex.reps}</span>
-        </div>
-        <div class="log-inputs" style="margin-bottom:8px">
-          <input class="log-input${lg.actualSets?' filled':''}" style="flex:1;min-width:0" type="number" inputmode="numeric"
-            placeholder="組數" value="${lg.actualSets||''}"
-            oninput="logField(${i},'actualSets',this.value);this.classList.toggle('filled',!!this.value)">
-          <input class="log-input${lg.actualReps?' filled':''}" style="flex:1;min-width:0" type="number" inputmode="numeric"
-            placeholder="次數" value="${lg.actualReps||''}"
-            oninput="logField(${i},'actualReps',this.value);this.classList.toggle('filled',!!this.value)">
-          <input class="log-input${lg.actualWeight?' filled':''}" style="flex:1;min-width:0" type="number" inputmode="decimal"
-            placeholder="kg" value="${lg.actualWeight||''}"
-            oninput="logField(${i},'actualWeight',this.value);this.classList.toggle('filled',!!this.value)">
-        </div>
-        <textarea class="log-note-input" placeholder="備註（感受、調整方向...）"
-          oninput="logField(${i},'note',this.value)">${lg.note||''}</textarea>
-      </div>`;
-    });
-    html += `</div>`;
-  }
-
-    // Cooldown section
-    if(day.cooldown && day.cooldown.length>0){
-      html += `<div class="card">
-        <div class="card-head">
-          <span class="card-head-icon">🧘</span>
-          <span class="card-head-title">收操放鬆</span>
-          <span style="margin-left:auto;font-size:11px;color:var(--mut)">約 10 分鐘</span>
-        </div>`;
-      day.cooldown.forEach((c,i)=>{
-        html += `<div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:${i<day.cooldown.length-1?'1px solid var(--bd)':'none'}">
-          <span style="font-size:18px;flex-shrink:0">🔵</span>
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:600;color:var(--txt)">${c.name}</div>
-            <div style="font-size:12px;color:var(--mut);margin-top:2px">${c.note}</div>
-          </div>
-          <div style="font-size:12px;color:var(--acc2);font-weight:600;flex-shrink:0;text-align:right">${c.duration}</div>
-        </div>`;
+function parseAI(text){
+  const result=[];let cur=null;
+  const parts=text.split(/(星期[一二三四五六日][^\n]*)/);
+  for(let i=0;i<parts.length;i++){
+    if(/^星期[一二三四五六日]/.test(parts[i])){
+      if(cur)result.push(cur);
+      cur={title:parts[i].trim(),exercises:[]};
+    } else if(cur){
+      parts[i].split("\n").map(l=>l.trim()).filter(Boolean).forEach(line=>{
+        if(line.includes("休息"))return;
+        const s=line.split("|").map(x=>x.replace(/^[-•\d.]+\s*/,"").trim());
+        if(s.length>=3)cur.exercises.push({name:s[0],sets:s[1],reps:s[2],weight:s[3]||"—",note:s[4]||"",steps:s[5]?s[5].split(/[；;]/).map(x=>x.trim()).filter(Boolean):[]});
       });
-      html += `</div>`;
     }
-
-    // ── 本日成果摘要 ──
-    const loggedExs = exs.filter((_,i)=>log.exercises[i]?.actualSets||log.exercises[i]?.actualWeight||log.exercises[i]?.done);
-    if(loggedExs.length>0 || doneCount>0){
-      const totalVolume = exs.reduce((sum,ex,i)=>{
-        const lg = log.exercises[i]||{};
-        const sets = parseFloat(lg.actualSets)||0;
-        const weight = parseFloat(lg.actualWeight)||parseFloat(ex.weight)||0;
-        const reps = parseInt(ex.reps)||0;
-        return sum + sets*weight*reps;
-      },0);
-      html += `<div class="card">
-        <div class="card-head">
-          <span class="card-head-icon">🏆</span>
-          <span class="card-head-title">本日成果</span>
-          <span class="badge" style="background:rgba(139,127,247,.15);color:var(--acc);margin-left:auto">${doneCount}/${exs.length} 完成</span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bd)">
-          <div style="background:var(--s1);padding:16px;text-align:center">
-            <div style="font-size:22px;font-weight:700;color:var(--grn)">${doneCount}</div>
-            <div style="font-size:11px;color:var(--mut);margin-top:4px">完成動作</div>
-          </div>
-          <div style="background:var(--s1);padding:16px;text-align:center">
-            <div style="font-size:22px;font-weight:700;color:var(--acc)">${totalVolume>0?Math.round(totalVolume).toLocaleString():'—'}</div>
-            <div style="font-size:11px;color:var(--mut);margin-top:4px">總訓練量 (kg)</div>
-          </div>
-        </div>
-        <div style="padding:4px 0">
-        ${exs.map((ex,i)=>{
-          const lg = log.exercises[i]||{};
-          const done = lg.done;
-          const hasLog = lg.actualSets||lg.actualWeight;
-          if(!done&&!hasLog) return '';
-          return `<div style="display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--bd)">
-            <span style="font-size:15px">${done?'✅':'⬜'}</span>
-            <div style="flex:1">
-              <div style="font-size:13px;font-weight:600;color:${done?'var(--txt)':'var(--mut)'}">${ex.name}</div>
-              ${hasLog?`<div style="font-size:12px;color:var(--acc);margin-top:2px">
-                ${lg.actualSets?`${lg.actualSets}組`:'—'} × ${lg.actualReps||ex.reps}
-                ${lg.actualWeight?`@ ${lg.actualWeight}kg`:''}
-              </div>
-              ${lg.note?`<div style="font-size:11px;color:var(--mut);margin-top:3px">💬 ${lg.note}</div>`:''}`
-              :`<div style="font-size:12px;color:var(--mut);margin-top:2px">計畫：${ex.sets}組 × ${ex.reps} @ ${ex.weight}</div>`}
-            </div>
-          </div>`;
-        }).join('')}
-        </div>
-      </div>`;
-    }
-  document.getElementById('pg-today').innerHTML = html;
-  }catch(e){
-    document.getElementById('pg-today').innerHTML = `
-    <div class="topbar"><div class="topbar-title">今天</div></div>
-    <div style="padding:24px;text-align:center;color:var(--mut);font-size:13px">載入時發生錯誤，請重新整理頁面</div>`;
   }
+  if(cur)result.push(cur);
+  return result.length>0?result:[{title:"課表",exercises:[]}];
 }
 
-function toggleEx(i){
-  const log = getLog();
-  if(!log.exercises[i]) log.exercises[i]={};
-  log.exercises[i].done = !log.exercises[i].done;
-  persist(); renderToday();
-}
-function logField(i,field,val){
-  const log = getLog();
-  if(!log.exercises[i]) log.exercises[i]={};
-  log.exercises[i][field] = val;
-  persist();
-}
-
-// ── GUIDE ──
-function openGuide(name){
-  const g = EXERCISE_GUIDE[name];
-  document.getElementById('guide-title').textContent = name;
-  if(!g){
-    document.getElementById('guide-body').innerHTML = `<div style="color:var(--mut);font-size:13px;padding:8px 0">暫無教學資料</div>`;
-  } else {
-    const steps = g.steps.map((s,i)=>`<div class="guide-step"><div class="guide-step-num">${i+1}</div><div class="guide-step-text">${s}</div></div>`).join('');
-    const tips = g.tips.map(t=>`<div class="guide-tip"><div class="guide-tip-icon">💡</div><div class="guide-tip-text">${t}</div></div>`).join('');
-    document.getElementById('guide-body').innerHTML = `
-      <div class="guide-section">
-        <div class="guide-section-title">動作步驟</div>
-        ${steps}
-      </div>
-      <div class="guide-section">
-        <div class="guide-section-title">注意事項</div>
-        ${tips}
-      </div>`;
-  }
-  document.getElementById('guide-overlay').classList.add('show');
-}
-function closeGuide(){ document.getElementById('guide-overlay').classList.remove('show'); }
-function openNote(){
-  document.getElementById('note-ta').value = getLog().dayNote||'';
-  document.getElementById('note-overlay').classList.add('show');
-  setTimeout(()=>document.getElementById('note-ta').focus(),100);
-}
-function closeNote(){ document.getElementById('note-overlay').classList.remove('show'); }
-function saveNote(){
-  getLog().dayNote = document.getElementById('note-ta').value;
-  persist(); closeNote(); renderToday();
-}
-
-// ── SCHEDULE ──
-function renderSchedule(){
-  try{
-  const day = SCHEDULE[schedIdx];
-  // 課表頁用該星期對應日期的紀錄，不用今天的
-  const now = new Date();
-  const dw = now.getDay(); // 0=日
-  const mon = new Date(now);
-  mon.setDate(now.getDate()-(dw===0?6:dw-1));
-  const schedDate = new Date(mon);
-  schedDate.setDate(mon.getDate()+schedIdx);
-  const schedDateStr = schedDate.toISOString().slice(0,10);
-  const schedLog = logs[schedDateStr]||{exercises:{},dayNote:""};
-
-  let tabs = SCHEDULE.map((d,i)=>`<button class="tab-btn${i===schedIdx?' on':''}" onclick="switchSched(${i})">${["一","二","三","四","五","六","日"][i]}</button>`).join('');
-  let exRows = day.exercises.length===0
-    ? `<div class="rest-card"><div class="rest-emoji">🧘</div><div class="rest-text">休息日</div></div>`
-    : day.exercises.map((ex,i)=>{
-      const done = schedLog.exercises[i]?.done;
-      return `
-      <div class="ex-row${done?' done':''}">
-        <div class="ex-check${done?' checked':''}" onclick="toggleSchedEx('${schedDateStr}',${i})"><span class="check-mark">✓</span></div>
-        <div style="flex:1" onclick="toggleSchedEx('${schedDateStr}',${i})">
-          <div class="ex-name">${ex.name}</div>
-          <div class="ex-detail">${ex.sets}組 × ${ex.reps}</div>
-        </div>
-        <button class="info-btn" onclick="openGuide('${ex.name.replace(/'/g,"\\'")}')">📖 教學</button>
-        <div class="ex-weight" onclick="toggleSchedEx('${schedDateStr}',${i})">${ex.weight}</div>
-      </div>`;
-    }).join('');
-
-  let cooldownRows = '';
-  if(day.cooldown && day.cooldown.length>0){
-    cooldownRows = `<div class="card" style="margin-top:0">
-      <div style="padding:12px 16px;border-bottom:1px solid var(--bd);font-size:14px;font-weight:700;color:var(--acc2)">🧘 收操放鬆</div>
-      ${day.cooldown.map((c,i)=>`
-        <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:${i<day.cooldown.length-1?'1px solid var(--bd)':'none'}">
-          <span style="font-size:18px;flex-shrink:0">🔵</span>
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:600;color:var(--txt)">${c.name}</div>
-            <div style="font-size:12px;color:var(--mut);margin-top:2px">${c.note}</div>
-          </div>
-          <div style="font-size:12px;color:var(--acc2);font-weight:600;flex-shrink:0;text-align:right">${c.duration}</div>
-        </div>`).join('')}
-    </div>`;
-  }
-
-  document.getElementById('pg-schedule').innerHTML = `
-  <div class="topbar"><div class="topbar-title">課表總覽</div></div>
-  <div class="tab-row">${tabs}</div>
-  <div class="card">
-    <div class="sched-title">${day.title}</div>
-    ${exRows}
-  </div>
-  ${cooldownRows}
-  <div style="height:20px"></div>`;
-  }catch(e){
-    document.getElementById('pg-schedule').innerHTML = `
-    <div class="topbar"><div class="topbar-title">課表總覽</div></div>
-    <div style="padding:24px;text-align:center;color:var(--mut);font-size:13px">載入時發生錯誤，請重新整理</div>`;
-  }
-}
-
-function toggleSchedEx(dateStr, i){
-  if(!logs[dateStr]) logs[dateStr]={exercises:{},dayNote:""};
-  if(!logs[dateStr].exercises[i]) logs[dateStr].exercises[i]={};
-  logs[dateStr].exercises[i].done = !logs[dateStr].exercises[i].done;
-  persist(); renderSchedule();
-}
-function switchSched(i){ schedIdx=i; renderSchedule(); }
-
-// ── STATS ──
-let viewingWeekOffset = 0; // 0=本週, -1=上週, -2=上上週...
-
-function getWeekDates(offset){
-  const now = new Date(); const dw = now.getDay();
-  const mon = new Date(now);
-  mon.setDate(now.getDate()-(dw===0?6:dw-1)+(offset*7));
-  return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d.toISOString().slice(0,10);});
-}
-
-function getWeekLabel(offset){
-  if(offset===0) return "本週";
-  if(offset===-1) return "上週";
-  const week = getWeekDates(offset);
-  const d = new Date(week[0]);
-  return `${d.getMonth()+1}/${d.getDate()} 那週`;
-}
-
-function renderStats(){
-  try{
-    const todStr = todayStr();
-    const week = getWeekDates(viewingWeekOffset);
-    const isCurrentWeek = viewingWeekOffset===0;
-
-    // 統計數字
-    let streak=0;
-    const sortedKeys = Object.keys(logs).sort().reverse();
-    for(const k of sortedKeys){
-      const exObj = logs[k]?.exercises||{};
-      if(Object.values(exObj).some(e=>e&&e.done)) streak++;
-      else break;
-    }
-    const weekDone = week.filter(d=>{
-      return Object.values(logs[d]?.exercises||{}).some(e=>e&&e.done);
-    }).length;
-    const totalEx = Object.values(logs).reduce((s,l)=>{
-      return s + Object.values(l.exercises||{}).filter(e=>e&&e.done).length;
-    },0);
-
-    // 週曆點點
-    const dots = week.map((d,i)=>{
-      const done = Object.values(logs[d]?.exercises||{}).some(e=>e&&e.done);
-      const isToday = d===todStr;
-      const num = parseInt(d.slice(8));
-      let cls = 'wd-dot'; if(done) cls+=' done'; else if(isToday&&isCurrentWeek) cls+=' today';
-      return `<div class="week-day"><div class="wd-lbl">${DAYS_LABEL[i]}</div><div class="${cls}">${num}</div></div>`;
-    }).join('');
-
-    // 週訓練詳細報告
-    const weekReport = week.map((d,wi)=>{
-      const lg = logs[d];
-      const dayData = SCHEDULE[wi];
-      if(!dayData||dayData.exercises.length===0) return ''; // 休息日跳過
-      const exs = dayData.exercises;
-      const exDone = Object.values(lg?.exercises||{}).filter(e=>e&&e.done).length;
-      const hasAnyLog = lg && (exDone>0 || Object.values(lg.exercises||{}).some(e=>e&&(e.actualSets||e.actualWeight||e.note)));
-      if(!hasAnyLog) return '';
-
-      const dt = new Date(d);
-      const totalVol = exs.reduce((sum,ex,i)=>{
-        const e = lg?.exercises[i]||{};
-        const s = parseFloat(e.actualSets)||0;
-        const w = parseFloat(e.actualWeight)||parseFloat(ex.weight)||0;
-        const r = parseInt(e.actualReps)||parseInt(ex.reps)||0;
-        return sum+s*w*r;
-      },0);
-
-      const exRows = exs.map((ex,i)=>{
-        const e = lg?.exercises[i]||{};
-        if(!e.done&&!e.actualSets&&!e.actualWeight&&!e.note) return '';
-        return `<div style="padding:10px 14px;border-bottom:1px solid var(--bd);display:flex;gap:10px;align-items:flex-start">
-          <span style="font-size:14px;margin-top:1px">${e.done?'✅':'⬜'}</span>
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:600;color:${e.done?'var(--txt)':'var(--mut)'}">${ex.name}</div>
-            <div style="font-size:12px;color:var(--acc);margin-top:2px">
-              ${e.actualSets?`${e.actualSets}組`:'—'} × ${e.actualReps||ex.reps} ${e.actualWeight?`@ ${e.actualWeight}kg`:''}
-              <span style="color:var(--mut)"> (計畫 ${ex.sets}×${ex.reps} @ ${ex.weight})</span>
-            </div>
-            ${e.note?`<div style="font-size:11px;color:var(--mut);margin-top:3px;line-height:1.5">💬 ${e.note}</div>`:''}
-          </div>
-        </div>`;
-      }).join('');
-
-      return `<div class="card" style="margin-top:0">
-        <div style="padding:13px 16px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <span style="font-size:14px;font-weight:700">${dt.getMonth()+1}/${dt.getDate()}</span>
-            <span style="font-size:12px;color:var(--mut);margin-left:8px">${dayData.title}</span>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:12px;color:var(--grn)">✓ ${exDone}/${exs.length} 完成</div>
-            ${totalVol>0?`<div style="font-size:11px;color:var(--mut)">量：${Math.round(totalVol).toLocaleString()} kg</div>`:''}
-          </div>
-        </div>
-        ${exRows}
-        ${lg.dayNote?`<div style="padding:10px 14px;font-size:12px;color:var(--mut);border-top:1px solid var(--bd)">📝 ${lg.dayNote}</div>`:''}
-      </div>`;
-    }).join('');
-
-    // 週切換
-    const weekNav = `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 4px">
-      <button onclick="changeWeek(-1)" style="background:var(--s2);border:1.5px solid var(--bd);color:var(--txt);padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px">← 上週</button>
-      <span style="font-size:13px;font-weight:700;color:var(--acc)">${getWeekLabel(viewingWeekOffset)}</span>
-      <button onclick="changeWeek(1)" ${isCurrentWeek?'disabled style="opacity:.3;cursor:default"':''} style="background:var(--s2);border:1.5px solid var(--bd);color:var(--txt);padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px">下週 →</button>
-    </div>`;
-
-    // 匯出按鈕
-    const exportBtn = `<div style="padding:0 14px 4px">
-      <button onclick="exportWeekBackup(${viewingWeekOffset})" style="width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--acc);background:rgba(139,127,247,.1);color:var(--acc);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
-        ☁️ 匯出${getWeekLabel(viewingWeekOffset)}紀錄備份
-      </button>
-    </div>`;
-
-    document.getElementById('pg-stats').innerHTML = `
-    <div class="topbar"><div class="topbar-title">訓練紀錄</div></div>
-    <div class="stat-row">
-      <div class="stat-box"><div class="stat-num">${streak}</div><div class="stat-lbl">連續天數 🔥</div></div>
-      <div class="stat-box"><div class="stat-num">${weekDone}</div><div class="stat-lbl">${getWeekLabel(viewingWeekOffset)}完成天</div></div>
-      <div class="stat-box"><div class="stat-num">${totalEx}</div><div class="stat-lbl">累計動作</div></div>
+function Ring({pct}){
+  const r=22,circ=2*Math.PI*r,col=pct===100?C.grn:C.acc;
+  return(
+    <div style={{position:"relative",width:56,height:56,flexShrink:0}}>
+      <svg width="56" height="56" viewBox="0 0 56 56" style={{transform:"rotate(-90deg)"}}>
+        <circle cx="28" cy="28" r={r} fill="none" stroke={C.bd} strokeWidth="5"/>
+        <circle cx="28" cy="28" r={r} fill="none" stroke={col} strokeWidth="5" strokeLinecap="round" strokeDasharray={`${pct/100*circ} ${circ}`}/>
+      </svg>
+      <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:col}}>{pct}%</div>
     </div>
-    <div class="card"><div class="week-grid">${dots}</div></div>
-    ${weekNav}
-    ${exportBtn}
-    <div class="sec-lbl">週訓練報告</div>
-    ${weekReport||`<div style="padding:24px;text-align:center;color:var(--mut);font-size:13px;line-height:1.6">${isCurrentWeek?'本週還沒有訓練紀錄<br>完成動作並填寫即時紀錄後會顯示在這裡':'這週沒有訓練紀錄'}</div>`}
-    <div style="height:20px"></div>`;
-  }catch(e){
-    document.getElementById('pg-stats').innerHTML = `
-    <div class="topbar"><div class="topbar-title">訓練紀錄</div></div>
-    <div style="padding:24px;color:var(--mut);font-size:13px;word-break:break-all">錯誤：${e.message}</div>`;
-  }
+  );
 }
 
-function exportWeekBackup(offset){
-  const week = getWeekDates(offset);
-  const label = getWeekLabel(offset);
-  const weekLabel = week[0].slice(0,10);
+function Chip({label,on,click,orange}){
+  const col=orange?C.acc2:C.acc;
+  return <button onClick={click} style={{padding:"9px 14px",borderRadius:100,border:`1.5px solid ${on?col:C.bd}`,background:on?`${col}22`:C.s2,color:on?col:C.mut,fontSize:13,cursor:"pointer",fontFamily:"inherit",transition:"all .15s",fontWeight:on?600:400}}>{label}</button>;
+}
 
-  // 整理本週完整資料
-  const report = {
-    exportTime: new Date().toLocaleString('zh-TW'),
-    weekLabel: label,
-    weekStart: week[0],
-    weekEnd: week[6],
-    days: week.map((d,wi)=>{
-      const dayData = SCHEDULE[wi];
-      const lg = logs[d]||{exercises:{},dayNote:""};
-      const exs = dayData?.exercises||[];
-      const exDone = Object.values(lg.exercises||{}).filter(e=>e&&e.done).length;
-      const totalVol = exs.reduce((sum,ex,i)=>{
-        const e = lg.exercises[i]||{};
-        const s = parseFloat(e.actualSets)||0;
-        const w = parseFloat(e.actualWeight)||parseFloat(ex.weight)||0;
-        const r = parseInt(e.actualReps)||parseInt(ex.reps)||0;
-        return sum+s*w*r;
-      },0);
-      return {
-        date: d,
-        dayTitle: dayData?.title||'',
-        completed: `${exDone}/${exs.length}`,
-        totalVolume: Math.round(totalVol),
-        dayNote: lg.dayNote||'',
-        exercises: exs.map((ex,i)=>{
-          const e = lg.exercises[i]||{};
-          return {
-            name: ex.name,
-            plan: `${ex.sets}組×${ex.reps} @ ${ex.weight}`,
-            actual: {
-              sets: e.actualSets||'',
-              reps: e.actualReps||'',
-              weight: e.actualWeight||'',
-              done: e.done||false,
-              note: e.note||''
-            }
-          };
+function ExDetail({ex}){
+  if(!ex.note&&(!ex.steps||ex.steps.length===0))return null;
+  return(
+    <div style={{padding:"12px 16px 16px",background:"#12121c",borderTop:`1px dashed ${C.bd}`}}>
+      {ex.note&&(
+        <div style={{marginBottom:ex.steps?.length?12:0}}>
+          <div style={{fontSize:11,fontWeight:700,color:C.acc2,marginBottom:4}}>⚠️ 注意事項</div>
+          <div style={{fontSize:12.5,color:C.txt,lineHeight:1.7}}>{ex.note}</div>
+        </div>
+      )}
+      {ex.steps?.length>0&&(
+        <div>
+          <div style={{fontSize:11,fontWeight:700,color:C.acc,marginBottom:4}}>📖 動作分解</div>
+          <ol style={{margin:0,paddingLeft:18,display:"flex",flexDirection:"column",gap:5}}>
+            {ex.steps.map((s,i)=><li key={i} style={{fontSize:12.5,color:C.txt,lineHeight:1.6}}>{s}</li>)}
+          </ol>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const card={background:C.s1,border:`1px solid ${C.bd}`,borderRadius:14,margin:"10px 14px 0",overflow:"hidden"};
+const cardHead={padding:"13px 16px",borderBottom:`1px solid ${C.bd}`,display:"flex",alignItems:"center",gap:10};
+const taStyle={width:"100%",background:C.s2,border:`1.5px solid ${C.bd}`,borderRadius:10,color:C.txt,padding:"11px 12px",fontSize:14,fontFamily:"inherit",resize:"none",minHeight:72,outline:"none",lineHeight:1.6};
+const btnPrimary={width:"100%",padding:"15px",borderRadius:12,border:"none",background:C.acc,color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit"};
+const btnGrad={...btnPrimary,background:"linear-gradient(135deg,#8b7ff7,#f0956a)"};
+const btnBack={padding:"14px 20px",borderRadius:12,border:`1.5px solid ${C.bd}`,background:C.s2,color:C.mut,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit"};
+const topbar={background:C.s1,borderBottom:`1px solid ${C.bd}`,padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0};
+const rangeStyle={width:"100%",height:4,WebkitAppearance:"none",appearance:"none",background:C.bd,borderRadius:100,outline:"none",cursor:"pointer"};
+
+function App(){
+  const [tab,setTab]=useState("today");
+  const [schedule,setSchedule]=useState(null);
+  const [logs,setLogs]=useState({});
+  const [step,setStep]=useState(1);
+  const [generating,setGenerating]=useState(false);
+  const [genText,setGenText]=useState("");
+  const [schedTab,setSchedTab]=useState(0);
+  const [showNote,setShowNote]=useState(false);
+  const [noteVal,setNoteVal]=useState("");
+  const [detailOpen,setDetailOpen]=useState(null);
+  const [form,setForm]=useState({goals:[],days:3,mins:60,level:null,bw:65,gender:null,injuries:[],injNote:"",place:null,equips:[],diets:[],dietNote:"",extra:"",bm:{}});
+
+  useEffect(()=>{
+    try{const d=JSON.parse(localStorage.getItem("fitapp_v3")||"null");if(d){setSchedule(d.s||null);setLogs(d.l||{});}}catch(e){}
+  },[]);
+
+  function save(s,l){try{localStorage.setItem("fitapp_v3",JSON.stringify({s,l}));}catch(e){}}
+
+  function getLog(){return logs[todayStr()]||{exercises:{},dayNote:""};}
+
+  function todayIdx(){
+    if(!schedule)return 0;
+    return [6,0,1,2,3,4,5][new Date().getDay()]%schedule.length;
+  }
+
+  function toggleEx(i){
+    const t=todayStr();const nl={...logs};
+    if(!nl[t])nl[t]={exercises:{},dayNote:""};
+    const ex=nl[t].exercises[i]||{};
+    nl[t].exercises={...nl[t].exercises,[i]:{...ex,done:!ex.done}};
+    setLogs(nl);save(schedule,nl);
+  }
+
+  function logField(i,field,val){
+    const t=todayStr();const nl={...logs};
+    if(!nl[t])nl[t]={exercises:{},dayNote:""};
+    nl[t].exercises={...nl[t].exercises,[i]:{...nl[t].exercises[i]||{},[field]:val}};
+    setLogs(nl);save(schedule,nl);
+  }
+
+  function saveNote(){
+    const t=todayStr();const nl={...logs};
+    if(!nl[t])nl[t]={exercises:{},dayNote:""};
+    nl[t].dayNote=noteVal;setLogs(nl);save(schedule,nl);setShowNote(false);
+  }
+
+  function toggleDetail(key){setDetailOpen(d=>d===key?null:key);}
+
+  function togF(key,val){setForm(f=>({...f,[key]:f[key].includes(val)?f[key].filter(x=>x!==val):[...f[key],val]}));}
+  function setF(key,val){setForm(f=>({...f,[key]:val}));}
+  function setBm(id,val){setForm(f=>({...f,bm:{...f.bm,[id]:val}}));}
+
+  const relBm=BMS.filter(b=>{
+    if(b.id==="pullup")return true;
+    if(["squat","deadlift"].includes(b.id))return form.equips.includes("槓鈴架")||form.equips.includes("全套器材")||form.equips.length===0;
+    if(["bench","ohp"].includes(b.id))return form.equips.includes("槓鈴架")||form.equips.includes("啞鈴")||form.equips.includes("全套器材")||form.equips.length===0;
+    if(b.id==="row")return form.equips.includes("啞鈴")||form.equips.includes("槓鈴架")||form.equips.includes("全套器材")||form.equips.length===0;
+    return true;
+  });
+
+  async function generate(){
+    const f=form;
+    const bmText=Object.entries(f.bm).filter(([,v])=>v).map(([k,v])=>{const b=BMS.find(x=>x.id===k);return b?`${b.name}：${v}${b.unit}`:""}).filter(Boolean).join("、")||"（未填）";
+    const lv=f.level!==null?`${LEVELS[f.level].n}（${LEVELS[f.level].d}）`:"未指定";
+    const prompt=`請設計健身課表：目標：${f.goals.join("、")||"未指定"}，頻率：每週${f.days}天每次${f.mins}分，程度：${lv}，體重：${f.bw}kg${f.gender?`，${f.gender}`:""}，限制：${f.injuries.join("、")||"無"}，場所：${f.place||"未指定"}，器材：${f.equips.join("、")||"未指定"}，飲食：${f.diets.join("、")||"無"}，基準重量：${bmText}${f.extra?`，備註：${f.extra}`:""}。請列出完整7天（星期一到星期日），訓練日以「星期X」開頭，每個動作格式：動作名稱|組數|次數|建議重量|注意事項|動作分解步驟（用；分隔3-6個步驟）（例如：深蹲|4|8下|60kg|膝蓋方向與腳尖一致避免內夾|站距與肩同寬；下蹲至大腿平行；發力站起）。依基準重量的70-75%推算，休息日只寫「星期X 休息日」。只輸出課表。`;
+    setGenerating(true);
+    setGenText("🔄 連線中，請稍候...");
+    try{
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:3500,
+          messages:[{role:"user",content:prompt}]
         })
-      };
-    })
-  };
+      });
+      const data=await res.json();
+      if(!res.ok){
+        setGenText(`⚠️ 錯誤 ${res.status}：${data?.error?.message||"請重試"}`);
+        setGenerating(false);return;
+      }
+      const raw=data.content?.map(b=>b.text||"").join("")||"";
+      if(!raw){setGenText("⚠️ 沒有收到內容，請重試");setGenerating(false);return;}
+      setGenText(raw);
+      const parsed=parseAI(raw);
+      setSchedule(parsed);
+      save(parsed,logs);
+      setTimeout(()=>{setGenerating(false);setStep(1);setTab("today");},800);
+    }catch(e){
+      setGenText("⚠️ 連線失敗："+e.message);
+      setGenerating(false);
+    }
+  }
 
-  // 產生可讀文字報告
-  const textReport = `=============================
-健身週訓練報告
-${label}（${week[0]} ~ ${week[6]}）
-匯出時間：${report.exportTime}
-=============================
-
-${report.days.map(day=>{
-  if(!day.dayTitle||day.exercises.length===0) return `【${day.date}】休息日\n`;
-  return `【${day.date}】${day.dayTitle}
-完成：${day.completed}  總訓練量：${day.totalVolume>0?day.totalVolume+' kg':'未記錄'}
-${day.exercises.map(ex=>{
-  const a = ex.actual;
-  const actualStr = a.sets||a.reps||a.weight ? `實際：${a.sets||'?'}組×${a.reps||'?'}次 @ ${a.weight||'?'}kg` : '未記錄';
-  return `  ${a.done?'✓':'✗'} ${ex.name}
-     計畫：${ex.plan}
-     ${actualStr}${a.note?`\n     備註：${a.note}`:''}`;
-}).join('\n')}
-${day.dayNote?`日記：${day.dayNote}`:''}
-`;
-}).join('\n')}
-=============================
-JSON備份（勿刪）：
-${JSON.stringify(report, null, 2)}
-`;
-
-  // 下載檔案
-  const blob = new Blob([textReport], {type:'text/plain;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `健身紀錄_${weekLabel}.txt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-function changeWeek(dir){
-  const newOffset = viewingWeekOffset + dir;
-  if(newOffset > 0) return;
-  viewingWeekOffset = newOffset;
-  renderStats();
-}
-
-// ── INFO ──
-function renderInfo(){
-  const bmi = (85/(1.71*1.71)).toFixed(1);
-  const ffmi = (34.6/(1.71*1.71)).toFixed(1);
-  document.getElementById('pg-info').innerHTML = `
-  <div class="topbar"><div class="topbar-title">個人資料</div></div>
-  <div style="padding:12px 14px 0">
-
-    <!-- 生理數據 -->
-    <div style="background:linear-gradient(135deg,rgba(139,127,247,.18),rgba(240,149,106,.12));border:1px solid rgba(139,127,247,.25);border-radius:14px;padding:18px;margin-bottom:10px">
-      <div style="font-size:13px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:14px">👤 生理數據</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
-        ${[
-          {l:"身高",v:"171",u:"cm"},
-          {l:"體重",v:"85",u:"kg"},
-          {l:"年齡",v:"33",u:"歲"},
-          {l:"體脂率",v:"29",u:"%"},
-          {l:"肌肉量",v:"34.6",u:"kg"},
-          {l:"BMI",v:bmi,u:""},
-        ].map(s=>`<div style="background:var(--s2);border-radius:10px;padding:12px 8px;text-align:center">
-          <div style="font-size:18px;font-weight:700;color:var(--txt)">${s.v}<span style="font-size:11px;color:var(--mut)">${s.u}</span></div>
-          <div style="font-size:11px;color:var(--mut);margin-top:3px">${s.l}</div>
-        </div>`).join('')}
-      </div>
-      <div style="background:var(--s2);border-radius:10px;padding:12px 14px">
-        <div style="font-size:12px;color:var(--mut);margin-bottom:8px">體組成分析</div>
-        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
-          <div style="font-size:12px;color:var(--txt);min-width:48px">脂肪</div>
-          <div style="flex:1;height:8px;background:var(--bd);border-radius:100px;overflow:hidden">
-            <div style="width:29%;height:100%;background:var(--acc2);border-radius:100px"></div>
-          </div>
-          <div style="font-size:12px;color:var(--acc2);min-width:36px;text-align:right">29%</div>
+  // ─── TODAY PAGE ───
+  function renderToday(){
+    const now=new Date();
+    const h=now.getHours();
+    const greet=h<12?"早安 ☀️":h<17?"午安 🌤️":"晚上好 🌙";
+    const dateStr=`${now.getMonth()+1}月${now.getDate()}日（週${["日","一","二","三","四","五","六"][now.getDay()]}）`;
+    if(!schedule){
+      return(
+        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 24px",textAlign:"center"}}>
+          <div style={{fontSize:64,marginBottom:16}}>🏋️</div>
+          <div style={{fontSize:18,fontWeight:700,marginBottom:8}}>還沒有課表</div>
+          <div style={{fontSize:13,color:C.mut,marginBottom:28,lineHeight:1.6}}>先到「設定」填寫資料<br/>由 AI 幫你建立專屬課表</div>
+          <button onClick={()=>setTab("setup")} style={{...btnPrimary,width:"auto",padding:"14px 36px"}}>開始設定 →</button>
         </div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <div style="font-size:12px;color:var(--txt);min-width:48px">肌肉</div>
-          <div style="flex:1;height:8px;background:var(--bd);border-radius:100px;overflow:hidden">
-            <div style="width:${(34.6/85*100).toFixed(0)}%;height:100%;background:var(--grn);border-radius:100px"></div>
-          </div>
-          <div style="font-size:12px;color:var(--grn);min-width:36px;text-align:right">${(34.6/85*100).toFixed(0)}%</div>
+      );
+    }
+    const idx=todayIdx();const day=schedule[idx];const log=getLog();
+    const exs=day.exercises||[];
+    const doneCount=exs.filter((_,i)=>log.exercises?.[i]?.done).length;
+    const pct=exs.length>0?Math.round(doneCount/exs.length*100):100;
+    return(
+      <>
+        <div style={topbar}>
+          <div><div style={{fontSize:11,color:C.mut}}>{greet}</div><div style={{fontSize:17,fontWeight:700}}>{dateStr}</div></div>
+          <button onClick={()=>{setNoteVal(log.dayNote||"");setShowNote(true);}} style={{background:"none",border:"none",color:C.mut,fontSize:22,cursor:"pointer"}}>📝</button>
         </div>
-      </div>
-    </div>
+        {/* Banner */}
+        <div style={{margin:"12px 14px 0",background:"linear-gradient(135deg,rgba(139,127,247,.2),rgba(240,149,106,.15))",border:"1px solid rgba(139,127,247,.25)",borderRadius:14,padding:"16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div>
+            <div style={{fontSize:19,fontWeight:700}}>{day.title}</div>
+            <div style={{fontSize:12,color:C.mut,marginTop:4}}>{doneCount}/{exs.length} 個動作完成</div>
+            {log.dayNote&&<div style={{fontSize:11,color:C.acc,marginTop:6,maxWidth:220,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>📝 {log.dayNote}</div>}
+          </div>
+          <Ring pct={pct}/>
+        </div>
+        {exs.length===0
+          ?<div style={{...card,padding:"24px",textAlign:"center",color:C.mut,margin:"12px 14px 0"}}>今天是休息日 🧘</div>
+          :<>
+            {/* Checklist */}
+            <div style={card}>
+              <div style={cardHead}>
+                <span style={{fontSize:18}}>✅</span>
+                <span style={{fontSize:14,fontWeight:700}}>勾選完成的動作</span>
+                {pct===100&&<span style={{marginLeft:"auto",fontSize:11,padding:"3px 10px",borderRadius:100,background:"rgba(77,232,160,.15)",color:C.grn}}>全部完成 🎉</span>}
+              </div>
+              {exs.map((ex,i)=>{
+                const done=log.exercises?.[i]?.done;
+                const dKey=`today-${i}`;const open=detailOpen===dKey;
+                const hasDetail=ex.note||ex.steps?.length>0;
+                return(
+                  <div key={i} style={{borderBottom:i<exs.length-1?`1px solid ${C.bd}`:"none"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",opacity:done?0.6:1}}>
+                      <div onClick={()=>toggleEx(i)} style={{width:26,height:26,borderRadius:"50%",border:`2px solid ${done?C.grn:C.bd}`,background:done?C.grn:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer"}}>
+                        {done&&<span style={{fontSize:13,color:"#0d0d14",fontWeight:700}}>✓</span>}
+                      </div>
+                      <div onClick={()=>toggleEx(i)} style={{flex:1,cursor:"pointer"}}>
+                        <div style={{fontSize:14,fontWeight:600,textDecoration:done?"line-through":"none",color:done?C.mut:C.txt}}>{ex.name}</div>
+                        <div style={{fontSize:12,color:C.mut,marginTop:2}}>{ex.sets}組 × {ex.reps}</div>
+                      </div>
+                      <div style={{fontSize:13,color:C.acc,fontWeight:700,flexShrink:0}}>{ex.weight}</div>
+                      {hasDetail&&<button onClick={()=>toggleDetail(dKey)} style={{background:"none",border:"none",color:open?C.acc:C.mut,fontSize:17,cursor:"pointer",flexShrink:0,padding:"4px 0 4px 6px"}}>📖</button>}
+                    </div>
+                    {open&&<ExDetail ex={ex}/>}
+                  </div>
+                );
+              })}
+            </div>
+            {/* Log inputs */}
+            <div style={card}>
+              <div style={cardHead}><span style={{fontSize:18}}>📊</span><span style={{fontSize:14,fontWeight:700}}>即時紀錄</span></div>
+              {exs.map((ex,i)=>{
+                const lg=log.exercises?.[i]||{};
+                return(
+                  <div key={i} style={{padding:"12px 16px",borderBottom:i<exs.length-1?`1px solid ${C.bd}`:"none"}}>
+                    <div style={{fontSize:12,fontWeight:600,color:C.mut,marginBottom:8}}>{ex.name} <span style={{color:C.acc}}>{ex.weight}</span></div>
+                    <div style={{display:"flex",gap:8}}>
+                      <input type="number" inputMode="numeric" placeholder="實際組數" value={lg.actualSets||""} onChange={e=>logField(i,"actualSets",e.target.value)}
+                        style={{flex:1,background:C.s2,border:`1.5px solid ${lg.actualSets?C.acc:C.bd}`,borderRadius:9,color:C.txt,padding:"10px",fontSize:14,fontFamily:"inherit",outline:"none"}}/>
+                      <input type="number" inputMode="decimal" placeholder="實際重量 kg" value={lg.actualWeight||""} onChange={e=>logField(i,"actualWeight",e.target.value)}
+                        style={{flex:1.5,background:C.s2,border:`1.5px solid ${lg.actualWeight?C.acc:C.bd}`,borderRadius:9,color:C.txt,padding:"10px",fontSize:14,fontFamily:"inherit",outline:"none"}}/>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{height:20}}/>
+          </>
+        }
+      </>
+    );
+  }
 
-    <!-- 訓練目標 -->
-    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:10px">
-      <div style="font-size:13px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:12px">🎯 訓練目標</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        ${[
-          {icon:"🔥",t:"減脂目標",d:"體脂從 29% → 20%（約減脂 7.5kg）"},
-          {icon:"💪",t:"增肌目標",d:"肌肉量從 34.6kg → 38kg"},
-          {icon:"📅",t:"訓練頻率",d:"每週 5 天，每次 60–70 分鐘"},
-        ].map(i=>`<div style="display:flex;gap:10px;align-items:flex-start">
-          <span style="font-size:18px;flex-shrink:0">${i.icon}</span>
-          <div><div style="font-size:13px;font-weight:600">${i.t}</div><div style="font-size:12px;color:var(--mut);margin-top:2px">${i.d}</div></div>
-        </div>`).join('')}
-      </div>
-    </div>
+  // ─── SCHEDULE PAGE ───
+  function renderSchedule(){
+    if(!schedule)return <div style={{padding:"48px 20px",textAlign:"center",color:C.mut}}>還沒有課表</div>;
+    const day=schedule[schedTab];
+    return(
+      <>
+        <div style={topbar}><div style={{fontSize:17,fontWeight:700}}>課表總覽</div></div>
+        <div style={{display:"flex",gap:8,overflowX:"auto",padding:"12px 14px",scrollbarWidth:"none"}}>
+          {schedule.map((d,i)=>(
+            <button key={i} onClick={()=>setSchedTab(i)} style={{flexShrink:0,padding:"8px 16px",borderRadius:100,border:`1.5px solid ${schedTab===i?C.acc:C.bd}`,background:schedTab===i?C.acc:C.s2,color:schedTab===i?"#fff":C.mut,fontSize:13,cursor:"pointer",fontFamily:"inherit",fontWeight:schedTab===i?700:400,whiteSpace:"nowrap"}}>
+              {d.title}
+            </button>
+          ))}
+        </div>
+        <div style={card}>
+          {(day.exercises||[]).length===0
+            ?<div style={{padding:"24px",textAlign:"center",color:C.mut}}>休息日 🧘</div>
+            :(day.exercises||[]).map((ex,i)=>{
+              const dKey=`sched-${schedTab}-${i}`;const open=detailOpen===dKey;
+              const hasDetail=ex.note||ex.steps?.length>0;
+              return(
+                <div key={i} style={{borderBottom:i<day.exercises.length-1?`1px solid ${C.bd}`:"none"}}>
+                  <div onClick={()=>hasDetail&&toggleDetail(dKey)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:hasDetail?"pointer":"default"}}>
+                    <span style={{fontSize:18}}>💪</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:14,fontWeight:600}}>{ex.name}</div>
+                      <div style={{fontSize:12,color:C.mut,marginTop:2}}>{ex.sets}組 × {ex.reps}</div>
+                    </div>
+                    <div style={{fontSize:13,color:C.acc,fontWeight:700,flexShrink:0}}>{ex.weight}</div>
+                    {hasDetail&&<span style={{fontSize:17,color:open?C.acc:C.mut,flexShrink:0}}>📖</span>}
+                  </div>
+                  {open&&<ExDetail ex={ex}/>}
+                </div>
+              );
+            })
+          }
+        </div>
+        <div style={{height:20}}/>
+      </>
+    );
+  }
 
-    <!-- 基準重量 -->
-    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:10px">
-      <div style="font-size:13px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:12px">🏋️ 5RM 基準重量</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        ${[
-          {n:"臥推",w:"70 kg"},{n:"深蹲",w:"115 kg"},
-          {n:"硬舉",w:"120 kg"},{n:"肩推",w:"40 kg"},
-          {n:"引體向上",w:"4 下"},
-        ].map(b=>`<div style="background:var(--s2);border-radius:10px;padding:11px 12px;display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px;color:var(--mut)">${b.n}</span>
-          <span style="font-size:14px;font-weight:700;color:var(--acc)">${b.w}</span>
-        </div>`).join('')}
-      </div>
-    </div>
+  // ─── STATS PAGE ───
+  function renderStats(){
+    const todStr=todayStr();
+    const now=new Date();const dw=now.getDay();
+    const mon=new Date(now);mon.setDate(now.getDate()-(dw===0?6:dw-1));
+    const week=Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d.toISOString().slice(0,10);});
+    let streak=0;
+    for(const k of Object.keys(logs).sort().reverse()){if(Object.values(logs[k].exercises||{}).some(e=>e.done))streak++;else break;}
+    const weekDone=week.filter(d=>Object.values(logs[d]?.exercises||{}).some(e=>e.done)).length;
+    const totalEx=Object.values(logs).reduce((s,l)=>s+Object.values(l.exercises||{}).filter(e=>e.done).length,0);
+    return(
+      <>
+        <div style={topbar}><div style={{fontSize:17,fontWeight:700}}>訓練紀錄</div></div>
+        <div style={{display:"flex",gap:10,padding:"12px 14px 0"}}>
+          {[{n:streak,l:"連續天數 🔥"},{n:weekDone,l:"本週完成天"},{n:totalEx,l:"累計動作"}].map((s,i)=>(
+            <div key={i} style={{flex:1,background:C.s1,border:`1px solid ${C.bd}`,borderRadius:12,padding:"14px 10px",textAlign:"center"}}>
+              <div style={{fontSize:24,fontWeight:700,color:C.acc}}>{s.n}</div>
+              <div style={{fontSize:11,color:C.mut,marginTop:4}}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+        <div style={card}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:6,padding:14}}>
+            {week.map((d,i)=>{
+              const done=Object.values(logs[d]?.exercises||{}).some(e=>e.done);
+              const isToday=d===todStr;const num=parseInt(d.slice(8));
+              return(
+                <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
+                  <div style={{fontSize:10,color:C.mut}}>{DAYS[i]}</div>
+                  <div style={{width:32,height:32,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:600,border:`1.5px solid ${done?C.grn:isToday?C.acc:C.bd}`,background:done?C.grn:isToday?"rgba(139,127,247,.15)":C.s2,color:done?"#0d0d14":isToday?C.acc:C.mut}}>{num}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div style={{fontSize:11,color:C.mut,padding:"14px 16px 4px",letterSpacing:".06em"}}>歷史紀錄</div>
+        {Object.entries(logs).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,20).map(([d,lg])=>{
+          const exDone=Object.values(lg.exercises||{}).filter(e=>e.done).length;
+          if(exDone===0&&!lg.dayNote)return null;
+          const dt=new Date(d);
+          return(
+            <div key={d} style={{...card,marginTop:0}}>
+              <div style={{padding:"13px 16px",borderBottom:lg.dayNote?`1px solid ${C.bd}`:"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:14,fontWeight:600}}>{dt.getMonth()+1}/{dt.getDate()}</span>
+                <span style={{fontSize:12,color:exDone>0?C.grn:C.mut}}>{exDone>0?`✓ ${exDone} 個動作`:"未記錄"}</span>
+              </div>
+              {lg.dayNote&&<div style={{padding:"10px 16px",fontSize:13,color:C.mut,lineHeight:1.6}}>{lg.dayNote}</div>}
+            </div>
+          );
+        })}
+        <div style={{height:20}}/>
+      </>
+    );
+  }
 
-    <!-- 訓練原則濃縮 -->
-    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:10px">
-      <div style="font-size:13px;font-weight:700;color:var(--acc);letter-spacing:.06em;margin-bottom:12px">📋 訓練原則</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        ${[
-          {icon:"📈",t:"漸進加重",d:"每 2 週 +2.5kg（上肢）/ +5kg（下肢）"},
-          {icon:"🥗",t:"每日蛋白質",d:"≥ 140g（體重 × 1.6g），熱量微赤字 200–300kcal"},
-          {icon:"😴",t:"恢復",d:"睡眠 7–9 小時，訓練後確實收操放鬆"},
-          {icon:"🔄",t:"週期",d:"8 週後重測 5RM，更新訓練重量"},
-        ].map(i=>`<div style="display:flex;gap:10px;align-items:flex-start">
-          <span style="font-size:16px;flex-shrink:0">${i.icon}</span>
-          <div><div style="font-size:13px;font-weight:600">${i.t}</div><div style="font-size:12px;color:var(--mut);margin-top:1px">${i.d}</div></div>
-        </div>`).join('')}
+  // ─── SETUP PAGE ───
+  function renderSetup(){
+    if(generating){
+      return(
+        <div style={{padding:"28px 16px"}}>
+          <div style={{fontSize:16,fontWeight:700,marginBottom:8}}>🗓️ 正在建立課表</div>
+          <div style={{fontSize:12,color:C.mut,marginBottom:16,display:"flex",alignItems:"center",gap:6}}>
+            AI 量身設計中
+            <span style={{display:"inline-flex",gap:3}}>
+              {[0,1,2].map(i=><span key={i} style={{width:5,height:5,background:C.acc,borderRadius:"50%",display:"inline-block",animation:`dn 1.1s ${i*.18}s ease infinite`}}/>)}
+            </span>
+            <style>{`@keyframes dn{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}`}</style>
+          </div>
+          <div style={{fontSize:13,lineHeight:1.85,whiteSpace:"pre-wrap",color:C.txt}}>{genText}</div>
+        </div>
+      );
+    }
+    if(schedule&&step===1){
+      return(
+        <>
+          <div style={topbar}><div style={{fontSize:17,fontWeight:700}}>設定</div></div>
+          <div style={{padding:"16px"}}>
+            <div style={{...card,margin:0,marginBottom:12}}>
+              <div style={cardHead}><span style={{fontSize:18}}>✅</span><span style={{fontSize:14,fontWeight:700}}>課表已建立</span></div>
+              <div style={{padding:"13px 16px",fontSize:13,color:C.mut}}>課表已設定完成，前往「今天」開始訓練。</div>
+            </div>
+            <button onClick={()=>{setSchedule(DEFAULT_SCHEDULE);save(DEFAULT_SCHEDULE,logs);setDetailOpen(null);}} style={{...btnGrad,width:"100%",marginBottom:10}}>📖 套用一週四練課表（含注意事項＋動作分解）</button>
+            <button onClick={()=>{setSchedule(null);save(null,logs);setStep(1);}} style={{...btnBack,width:"100%"}}>🔄 用 AI 重新建立課表</button>
+          </div>
+        </>
+      );
+    }
+    const f=form;const TOTAL=5;
+    const pBar=(
+      <div style={{display:"flex",gap:4,marginBottom:22}}>
+        {Array.from({length:TOTAL},(_,i)=><div key={i} style={{flex:1,height:3,borderRadius:100,background:i+1<step?C.grn:i+1===step?C.acc:C.bd,transition:"background .3s"}}/>)}
       </div>
-    </div>
+    );
+    const navRow=(isLast)=>(
+      <div style={{display:"flex",gap:10,marginTop:20,paddingBottom:24}}>
+        {step>1&&<button onClick={()=>setStep(s=>s-1)} style={btnBack}>← 返回</button>}
+        <button onClick={isLast?generate:()=>setStep(s=>s+1)} style={isLast?{...btnGrad}:{...btnPrimary}}>
+          {isLast?"✨ 生成課表":"下一步 →"}
+        </button>
+      </div>
+    );
+    return(
+      <>
+        <div style={topbar}><div style={{fontSize:17,fontWeight:700}}>建立課表</div></div>
+        <div style={{padding:"20px 16px"}}>
+          {step===1&&!schedule&&(
+            <div style={{...card,margin:"0 0 16px",padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
+              <span style={{fontSize:24}}>📖</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:700}}>已經有現成的四天課表</div>
+                <div style={{fontSize:11,color:C.mut,marginTop:2}}>含每個動作的注意事項與分解步驟</div>
+              </div>
+              <button onClick={()=>{setSchedule(DEFAULT_SCHEDULE);save(DEFAULT_SCHEDULE,logs);setTab("today");}} style={{padding:"9px 14px",borderRadius:10,border:"none",background:C.acc,color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>直接套用</button>
+            </div>
+          )}
+          {pBar}
+          {step===1&&(
+            <>
+              <div style={{fontSize:19,fontWeight:700,marginBottom:6}}>你的目標 🎯</div>
+              <div style={{fontSize:13,color:C.mut,marginBottom:20}}>選擇主要訓練方向（可多選）</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
+                {GOALS.map(g=><Chip key={g} label={g} on={f.goals.includes(g)} click={()=>togF("goals",g)}/>)}
+              </div>
+              <div style={{marginBottom:18}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:10}}><span style={{fontSize:13,color:C.mut}}>每週天數</span><span style={{fontSize:16,color:C.acc,fontWeight:700}}>{f.days} 天</span></div>
+                <input type="range" min="1" max="7" value={f.days} onChange={e=>setF("days",+e.target.value)} style={rangeStyle}/>
+              </div>
+              <div style={{marginBottom:4}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:10}}><span style={{fontSize:13,color:C.mut}}>每次時長</span><span style={{fontSize:16,color:C.acc,fontWeight:700}}>{f.mins} 分鐘</span></div>
+                <input type="range" min="20" max="120" step="10" value={f.mins} onChange={e=>setF("mins",+e.target.value)} style={rangeStyle}/>
+              </div>
+              {navRow(false)}
+            </>
+          )}
+          {step===2&&(
+            <>
+              <div style={{fontSize:19,fontWeight:700,marginBottom:6}}>目前狀況 📊</div>
+              <div style={{fontSize:13,color:C.mut,marginBottom:16}}>誠實評估才能得到最適合的課表</div>
+              {LEVELS.map((l,i)=>(
+                <div key={i} onClick={()=>setF("level",i)} style={{display:"flex",alignItems:"center",gap:12,padding:"15px",borderRadius:12,border:`1.5px solid ${f.level===i?C.acc:C.bd}`,background:f.level===i?"rgba(139,127,247,.1)":C.s2,cursor:"pointer",marginBottom:8}}>
+                  <span style={{fontSize:22}}>{l.e}</span>
+                  <div><div style={{fontSize:14,fontWeight:600,color:f.level===i?C.acc:C.txt}}>{l.n}</div><div style={{fontSize:11,color:C.mut}}>{l.d}</div></div>
+                </div>
+              ))}
+              <div style={{marginTop:8,marginBottom:14}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:10}}><span style={{fontSize:13,color:C.mut}}>體重</span><span style={{fontSize:16,color:C.acc,fontWeight:700}}>{f.bw} kg</span></div>
+                <input type="range" min="40" max="150" value={f.bw} onChange={e=>setF("bw",+e.target.value)} style={rangeStyle}/>
+              </div>
+              <div style={{display:"flex",gap:8,marginBottom:14}}>
+                {["男性","女性","不指定"].map(g=>(
+                  <button key={g} onClick={()=>setF("gender",g)} style={{flex:1,padding:"12px",borderRadius:10,border:`1.5px solid ${f.gender===g?C.acc:C.bd}`,background:f.gender===g?"rgba(139,127,247,.12)":C.s2,color:f.gender===g?C.acc:C.mut,fontSize:13,fontWeight:f.gender===g?700:400,cursor:"pointer",fontFamily:"inherit"}}>{g}</button>
+                ))}
+              </div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:12}}>
+                {INJURIES.map(i=><Chip key={i} label={i} on={f.injuries.includes(i)} click={()=>togF("injuries",i)} orange/>)}
+              </div>
+              <textarea style={taStyle} placeholder="其他傷病說明..." value={f.injNote} onChange={e=>setF("injNote",e.target.value)}/>
+              {navRow(false)}
+            </>
+          )}
+          {step===3&&(
+            <>
+              <div style={{fontSize:19,fontWeight:700,marginBottom:6}}>器材設備 🔧</div>
+              <div style={{fontSize:13,color:C.mut,marginBottom:16}}>選擇你實際可用的器材</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:16}}>
+                {PLACES.map(p=><Chip key={p} label={p} on={f.place===p} click={()=>setF("place",p)} orange/>)}
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+                {EQUIPS.map(eq=>{
+                  const s=f.equips.includes(eq.n);
+                  return(
+                    <button key={eq.n} onClick={()=>togF("equips",eq.n)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,padding:"14px 8px",borderRadius:12,border:`1.5px solid ${s?C.acc2:C.bd}`,background:s?"rgba(240,149,106,.12)":C.s2,cursor:"pointer"}}>
+                      <span style={{fontSize:24}}>{eq.e}</span>
+                      <span style={{fontSize:11,color:s?C.acc2:C.mut,fontWeight:s?600:400}}>{eq.n}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {navRow(false)}
+            </>
+          )}
+          {step===4&&(
+            <>
+              <div style={{fontSize:19,fontWeight:700,marginBottom:6}}>基準重量 🏆</div>
+              <div style={{background:"rgba(139,127,247,.08)",border:"1px solid rgba(139,127,247,.2)",borderRadius:10,padding:"12px 14px",marginBottom:14,fontSize:12,color:C.mut,lineHeight:1.65}}>
+                💡 填入能做 <strong style={{color:C.acc}}>5 下</strong> 的最大重量，讓 AI 推算訓練重量。不確定可空白。
+              </div>
+              <div style={{...card,margin:0,padding:0}}>
+                {relBm.map((b,i)=>(
+                  <div key={b.id} style={{display:"flex",alignItems:"center",gap:12,padding:"15px 16px",borderBottom:i<relBm.length-1?`1px solid ${C.bd}`:"none"}}>
+                    <span style={{fontSize:22,width:30,flexShrink:0}}>{b.icon}</span>
+                    <div style={{flex:1}}><div style={{fontSize:14,fontWeight:600}}>{b.name}</div><div style={{fontSize:11,color:C.mut,marginTop:2}}>{b.hint}</div></div>
+                    <input type="number" inputMode="numeric" placeholder="—" value={f.bm[b.id]||""} onChange={e=>setBm(b.id,e.target.value)}
+                      style={{width:68,background:C.s2,border:`1.5px solid ${f.bm[b.id]?C.acc:C.bd}`,borderRadius:9,color:C.txt,padding:"9px 8px",fontSize:16,fontFamily:"inherit",outline:"none",textAlign:"center"}}/>
+                    <span style={{fontSize:12,color:C.mut,minWidth:18}}>{b.unit}</span>
+                  </div>
+                ))}
+              </div>
+              {navRow(false)}
+            </>
+          )}
+          {step===5&&(
+            <>
+              <div style={{fontSize:19,fontWeight:700,marginBottom:6}}>飲食資訊 🥗</div>
+              <div style={{fontSize:13,color:C.mut,marginBottom:16}}>搭配飲食建議（可多選）</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:14}}>
+                {DIETS.map(d=><Chip key={d} label={d} on={f.diets.includes(d)} click={()=>togF("diets",d)}/>)}
+              </div>
+              <textarea style={{...taStyle,marginBottom:10}} placeholder="補充品、過敏食材..." value={f.dietNote} onChange={e=>setF("dietNote",e.target.value)}/>
+              <textarea style={taStyle} placeholder="其他想讓 AI 知道的事..." value={f.extra} onChange={e=>setF("extra",e.target.value)}/>
+              {navRow(true)}
+            </>
+          )}
+        </div>
+      </>
+    );
+  }
 
-  </div>
-  <div style="height:20px"></div>`;
+  const pages={today:renderToday,schedule:renderSchedule,stats:renderStats,setup:renderSetup};
+
+  return(
+    <div style={{background:C.bg,height:"100%",fontFamily:"system-ui,-apple-system,'Noto Sans TC',sans-serif",color:C.txt,display:"flex",flexDirection:"column"}}>
+      {/* Note modal */}
+      {showNote&&(
+        <div onClick={e=>{if(e.target===e.currentTarget)setShowNote(false);}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.65)",zIndex:50,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+          <div style={{width:"100%",maxWidth:480,background:C.s1,borderRadius:"20px 20px 0 0",padding:"20px 18px 32px"}}>
+            <div style={{width:36,height:4,background:C.bd,borderRadius:100,margin:"0 auto 18px"}}/>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:16,fontWeight:700}}>📝 今日備註</div>
+              <button onClick={()=>setShowNote(false)} style={{background:"none",border:"none",color:C.mut,fontSize:24,cursor:"pointer"}}>×</button>
+            </div>
+            <textarea style={{...taStyle,minHeight:100}} placeholder="訓練感受、下次要調整..." value={noteVal} onChange={e=>setNoteVal(e.target.value)} autoFocus/>
+            <button onClick={saveNote} style={{...btnPrimary,marginTop:12}}>儲存</button>
+          </div>
+        </div>
+      )}
+      {/* Content */}
+      <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+        {pages[tab]()}
+      </div>
+      {/* Nav */}
+      <nav style={{display:"flex",background:C.s1,borderTop:`1px solid ${C.bd}`,flexShrink:0}}>
+        {[{id:"today",icon:"🏠",label:"今天"},{id:"schedule",icon:"📋",label:"課表"},{id:"stats",icon:"📊",label:"紀錄"},{id:"setup",icon:"⚙️",label:"設定"}].map(n=>(
+          <button key={n.id} onClick={()=>setTab(n.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"none",border:"none",cursor:"pointer",color:tab===n.id?C.acc:C.mut,fontSize:10,fontFamily:"inherit",padding:"10px 0"}}>
+            <span style={{fontSize:22,lineHeight:1}}>{n.icon}</span>
+            {n.label}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
 }
 
-// ── BACKUP REMINDER ──
-function checkBackupReminder(){
-  try{
-    const now = new Date();
-    const dw = now.getDay(); // 0=日
-    const hour = now.getHours();
-
-    // 週日晚上 8 點後顯示提醒
-    if(dw !== 0 || hour < 20) return;
-
-    // 檢查本週是否有訓練紀錄
-    const mon = new Date(now);
-    mon.setDate(now.getDate()-6);
-    const week = Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d.toISOString().slice(0,10);});
-    const hasTraining = week.some(d=>Object.values(logs[d]?.exercises||{}).some(e=>e&&e.done));
-    if(!hasTraining) return;
-
-    // 檢查今天是否已經提醒過 / 備份過
-    const lastBackup = localStorage.getItem('lastBackupReminder');
-    const todayKey = now.toISOString().slice(0,10);
-    if(lastBackup === todayKey) return;
-
-    // 計算本週完成天數
-    const doneDays = week.filter(d=>Object.values(logs[d]?.exercises||{}).some(e=>e&&e.done)).length;
-    document.getElementById('backup-sub-text').innerHTML =
-      `本週你完成了 <strong style="color:var(--grn)">${doneDays} 天</strong> 訓練 💪<br>立即備份這週的紀錄，方便追蹤進步！`;
-
-    // 顯示彈窗
-    document.getElementById('backup-overlay').classList.add('show');
-  }catch(e){}
-}
-
-function doBackupAndClose(){
-  exportWeekBackup(-1); // 匯出上週（週日算上週結束）
-  localStorage.setItem('lastBackupReminder', todayStr());
-  document.getElementById('backup-overlay').classList.remove('show');
-}
-
-function snoozeBackup(){
-  localStorage.setItem('lastBackupReminder', todayStr());
-  document.getElementById('backup-overlay').classList.remove('show');
-}
-load();
-renderToday();
-renderSchedule();
-renderStats();
-renderInfo();
-setTimeout(checkBackupReminder, 1500);
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
 </script>
 </body>
 </html>
