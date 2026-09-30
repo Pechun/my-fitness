@@ -33,7 +33,14 @@ const DAYS=["一","二","三","四","五","六","日"];
 
 // 一週四練｜含注意事項與動作分解（依 8RM 100kg 校正深蹲，其餘沿用原基準）
 const DEFAULT_SCHEDULE=[
-  {title:"週一｜下肢（深蹲主導）＋核心",exercises:[
+  {title:"週一｜下肢（深蹲主導）＋核心",warmup:[
+    {name:"髖屈肌牽拉（跨步式）",time:"每邊30秒",note:"深蹲深度常被髖屈肌緊繃限制，先拉開"},
+    {name:"90/90髖關節轉動",time:"每邊5下",note:"活化髖關節內外旋活動度"},
+    {name:"彈力帶Monster Walk（側向）",time:"10步×2方向",note:"喚醒臀中肌，深蹲膝蓋不內夾的關鍵"},
+    {name:"徒手深蹲（慢速，底部停頓2秒）",time:"10下",note:"用停頓法強迫感受股四頭與臀部張力"},
+    {name:"臀橋（頂端夾緊停頓1秒）",time:"15下",note:"賽前喚醒臀大肌收縮感"},
+    {name:"空槓深蹲",time:"8下",note:"20kg槓，銜接正式暖身組"},
+  ],exercises:[
     {name:"深蹲",sets:"暖身2+Top1+Backoff2",reps:"皆5下",weight:"60/75→95-100→85-90kg",
       note:"膝蓋方向與腳尖一致避免內夾；髖低於膝再起身；下蹲前吸氣繃緊核心；發力在臀部與股四頭，避免下背代償",
       steps:["槓鈴置於上背斜方肌（高槓）或後三角肌（低槓），雙手略寬於肩握槓","站距與肩同寬或略寬，腳尖微外八15-30度","起槓後退2-3步站穩，吸一大口氣，腹部繃緊如同準備被打一拳","屁股先往後坐，同時膝蓋順著腳尖方向彎曲，重心維持在腳掌中段","下蹲至髖關節低於膝蓋（或至少大腿與地面平行）","由臀部與大腿發力，像把地板往下踩的感覺站起","站直鎖定膝蓋與髖關節，吐氣，準備下一次"]},
@@ -56,7 +63,14 @@ const DEFAULT_SCHEDULE=[
       note:"避免擺盪借力，骨盆後傾捲起而非只靠髖屈肌甩腿，下放不完全放鬆",
       steps:["雙手抓握單槓或使用吊帶懸掛身體","身體自然懸空，避免大幅度晃動","收緊腹部，將骨盆向後捲，帶動雙腿向上抬起","抬到大腿接近與地面平行，或更高至90度以上","緩慢控制放下雙腿，接近底部時保持腹部張力不完全放鬆","重複動作，過程中避免用腰部甩動借力"]},
   ]},
-  {title:"週二｜上肢推（胸／肩／三頭）",exercises:[
+  {title:"週二｜上肢推（胸／肩／三頭）",warmup:[
+    {name:"肩繞環（前後各方向）",time:"每方向8下",note:"活化肩關節活動度，降低推系動作卡卡感"},
+    {name:"彈力帶Pull-Apart（水平拉開）",time:"15下",note:"先啟動後三角/中背，平衡推系動作前側過度主導"},
+    {name:"YTWL（俯臥或站姿）",time:"每個8下",note:"喚醒肩胛穩定肌群，避免臥推/肩推時聳肩代償"},
+    {name:"伏地挺身（慢速，底部停頓1秒）",time:"10下",note:"徒手預先喚醒胸大肌與三頭"},
+    {name:"彈力帶胸推",time:"15下",note:"做到微痠（RPE5-6），提高胸部感受度"},
+    {name:"空槓臥推",time:"8下",note:"銜接正式暖身組"},
+  ],exercises:[
     {name:"臥推",sets:"暖身2+Top1+Backoff2",reps:"皆5下",weight:"45/55→63-65→56-59kg",
       note:"肩胛骨主動下沉夾緊固定椅面；下背維持自然拱度；槓鈴下降至胸口中下方；發力時想像蹬地",
       steps:["平躺於臥推椅，眼睛約在槓鈴正下方","雙手略寬於肩握槓，虎口朝上","肩胛骨向後夾緊並下沉，固定在椅面上","雙腳踩穩地面，製造穩定支撐","起槓後移到胸口正上方，吸氣緩慢下降","槓鈴輕觸胸口中下方，手肘約呈45度角，不完全外展90度","用胸部與三頭發力推起，同時感覺雙腳蹬地產生的穩定力","手臂伸直但不鎖死，吐氣，回到起始位置重複"]},
@@ -77,7 +91,14 @@ const DEFAULT_SCHEDULE=[
       steps:["坐姿或站姿，雙手共同握住一個啞鈴或使用繩索把手，舉至頭頂上方","手肘朝向正前方，固定不外開","緩慢彎曲手肘，讓重量下降至頭後方，感受三頭肌拉伸","手肘位置全程保持固定，避免向外張開或向前移動","用三頭肌發力將重量推回頭頂伸直位置"]},
   ]},
   {title:"週三｜休息",exercises:[]},
-  {title:"週四｜下肢（髖鉸鏈主導）＋核心",exercises:[
+  {title:"週四｜下肢（髖鉸鏈主導）＋核心",warmup:[
+    {name:"貓牛式",time:"8下",note:"活動脊椎，為硬舉的背部打直做準備"},
+    {name:"髖關節鉸鏈練習（徒手，手扶牆）",time:"10下",note:"先建立「屈髖不彎腰」的動作模式，避免正式負重時駝背"},
+    {name:"彈力帶直腿硬舉",time:"15下",note:"輕負荷預先喚醒膕繩肌"},
+    {name:"鳥狗式（對側手腳）",time:"每邊8下",note:"啟動核心與下背穩定，硬舉前的關鍵熱身"},
+    {name:"臀橋（頂端停頓1秒）",time:"15下",note:"喚醒臀大肌，分擔下背壓力"},
+    {name:"空槓硬舉",time:"8下",note:"銜接正式暖身組"},
+  ],exercises:[
     {name:"硬舉",sets:"暖身2+Top1+Backoff2",reps:"皆5下",weight:"70/90→108-112→96-102kg",
       note:"起槓前槓貼緊脛骨，背部打直非駝背；用腿推地而非用背拉；發力在臀部與後側鏈",
       steps:["站於槓鈴前，腳與髖同寬，槓鈴貼近脛骨","屈髖屈膝下蹲握槓，雙手略寬於肩，握距在膝蓋外側","挺胸、背部打直，肩膀略在槓鈴前方，視線平視前方","吸氣繃緊核心，先用雙腿蹬地的力量將槓鈴拉離地面","槓鈴貼近身體上升，過程中髖與肩同步伸展上升","站直時臀部夾緊，肩膀後收，全身呈直立狀態","緩慢將槓鈴沿相同路徑放回地面，過程中保持背部打直"]},
@@ -100,7 +121,13 @@ const DEFAULT_SCHEDULE=[
       note:"肩膀在手肘正上方，身體呈一直線不塌腰不翹臀，核心側邊持續出力",
       steps:["側躺，手肘撐地位於肩膀正下方，雙腳疊放或前後交錯站立","抬起髖部，讓身體從頭到腳呈一直線","收緊腹部側邊（腹斜肌），避免髖部下塌或過度上翹","維持姿勢正常呼吸至時間結束，換邊重複"]},
   ]},
-  {title:"週五｜上肢拉（背／二頭）",exercises:[
+  {title:"週五｜上肢拉（背／二頭）",warmup:[
+    {name:"肩繞環＋肩胛後收練習",time:"8下",note:"喚醒肩胛穩定肌群，拉系動作靠肩胛帶動而非只有手臂"},
+    {name:"彈力帶划船",time:"15下",note:"輕負荷先啟動背闊肌與菱形肌"},
+    {name:"懸吊被動掛（不出力，單純伸展）",time:"20秒",note:"打開肩關節活動度，為引體向上做準備"},
+    {name:"彈力帶輔助引體向上",time:"5-8下",note:"建立拉起的動作軌跡與背部發力感"},
+    {name:"滑輪下拉（輕重量）",time:"10下",note:"銜接正式暖身組"},
+  ],exercises:[
     {name:"引體向上",sets:"5",reps:"力竭",weight:"徒手",
       note:"起始完全懸吊伸直手臂，拉起時手肘往後下方帶動；避免甩動借力，下放全程控制",
       steps:["雙手握單槓，握距略寬於肩，虎口朝外（正握）","身體自然懸吊，手臂完全伸直，肩胛骨放鬆下沉","吸氣，用背闊肌發力，手肘向後下方帶動身體向上拉起","拉至下巴超過槓面或胸口接近槓的高度","緩慢控制下放回完全伸直的懸吊姿勢，感受背部拉伸","避免用腿部擺盪或身體甩動借力，力竭前保持動作品質"]},
@@ -325,6 +352,28 @@ function App(){
           </div>
           <Ring pct={pct}/>
         </div>
+        {/* Warmup */}
+        {day.warmup?.length>0&&(()=>{const wOpen=detailOpen==="warmup";return(
+          <div style={{...card,borderColor:"rgba(240,149,106,.35)"}}>
+            <div onClick={()=>toggleDetail("warmup")} style={{...cardHead,cursor:"pointer",justifyContent:"space-between"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:18}}>🔥</span>
+                <span style={{fontSize:14,fontWeight:700}}>訓練前暖身</span>
+                <span style={{fontSize:11,color:C.mut}}>（{day.warmup.length}項）</span>
+              </div>
+              <span style={{fontSize:14,color:wOpen?C.acc2:C.mut}}>{wOpen?"收合 ▲":"展開 ▼"}</span>
+            </div>
+            {wOpen&&day.warmup.map((w,i)=>(
+              <div key={i} style={{padding:"12px 16px",borderBottom:i<day.warmup.length-1?`1px solid ${C.bd}`:"none",display:"flex",gap:12,alignItems:"flex-start"}}>
+                <span style={{fontSize:12,color:C.acc2,fontWeight:700,flexShrink:0,minWidth:64}}>{w.time}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:600}}>{w.name}</div>
+                  <div style={{fontSize:11.5,color:C.mut,marginTop:3,lineHeight:1.5}}>{w.note}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );})()}
         {exs.length===0
           ?<div style={{...card,padding:"24px",textAlign:"center",color:C.mut,margin:"12px 14px 0"}}>今天是休息日 🧘</div>
           :<>
@@ -396,6 +445,27 @@ function App(){
             </button>
           ))}
         </div>
+        {day.warmup?.length>0&&(()=>{const wOpen=detailOpen==="sched-warmup";return(
+          <div style={{...card,borderColor:"rgba(240,149,106,.35)"}}>
+            <div onClick={()=>toggleDetail("sched-warmup")} style={{...cardHead,cursor:"pointer",justifyContent:"space-between"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:18}}>🔥</span>
+                <span style={{fontSize:14,fontWeight:700}}>訓練前暖身</span>
+                <span style={{fontSize:11,color:C.mut}}>（{day.warmup.length}項）</span>
+              </div>
+              <span style={{fontSize:14,color:wOpen?C.acc2:C.mut}}>{wOpen?"收合 ▲":"展開 ▼"}</span>
+            </div>
+            {wOpen&&day.warmup.map((w,i)=>(
+              <div key={i} style={{padding:"12px 16px",borderBottom:i<day.warmup.length-1?`1px solid ${C.bd}`:"none",display:"flex",gap:12,alignItems:"flex-start"}}>
+                <span style={{fontSize:12,color:C.acc2,fontWeight:700,flexShrink:0,minWidth:64}}>{w.time}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:600}}>{w.name}</div>
+                  <div style={{fontSize:11.5,color:C.mut,marginTop:3,lineHeight:1.5}}>{w.note}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );})()}
         <div style={card}>
           {(day.exercises||[]).length===0
             ?<div style={{padding:"24px",textAlign:"center",color:C.mut}}>休息日 🧘</div>
