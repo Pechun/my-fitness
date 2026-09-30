@@ -205,7 +205,7 @@ function App(){
   const [showNote,setShowNote]=useState(false);
   const [noteVal,setNoteVal]=useState("");
   const [detailOpen,setDetailOpen]=useState(null);
-  const [form,setForm]=useState({goals:[],days:3,mins:60,level:null,bw:65,gender:null,injuries:[],injNote:"",place:null,equips:[],diets:[],dietNote:"",extra:"",bm:{}});
+  const [form,setForm]=useState({goals:[],days:3,mins:70,level:null,bw:65,gender:null,injuries:[],injNote:"",place:null,equips:[],diets:[],dietNote:"",extra:"",bm:{}});
 
   useEffect(()=>{
     try{const d=JSON.parse(localStorage.getItem("fitapp_v3")||"null");if(d){setSchedule(d.s||null);setLogs(d.l||{});}}catch(e){}
