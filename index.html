@@ -245,7 +245,7 @@ function App(){
   const [form,setForm]=useState({goals:[],days:3,mins:70,level:null,bw:65,gender:null,injuries:[],injNote:"",place:null,equips:[],diets:[],dietNote:"",extra:"",bm:{}});
 
   useEffect(()=>{
-    try{const d=JSON.parse(localStorage.getItem("fitapp_v3")||"null");if(d){setSchedule(d.s||null);setLogs(d.l||{});}}catch(e){}
+    try{const d=JSON.parse(localStorage.getItem("fitapp_v3")||"null");if(d){setSchedule(d.s||null);setLogs(d.l||{});}else{setSchedule(DEFAULT_SCHEDULE);save(DEFAULT_SCHEDULE,{});}}catch(e){setSchedule(DEFAULT_SCHEDULE);}
   },[]);
 
   function save(s,l){try{localStorage.setItem("fitapp_v3",JSON.stringify({s,l}));}catch(e){}}
