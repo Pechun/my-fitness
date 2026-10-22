@@ -2,14 +2,23 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <title>我的健身課表</title>
+<meta name="theme-color" content="#0d0d14"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="我的健身"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<link rel="icon" type="image/png" href="icon-192.png"/>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 <style>
-  html,body{margin:0;padding:0;height:100%;background:#0d0d14;-webkit-tap-highlight-color:transparent;}
-  #root{height:100vh;max-width:480px;margin:0 auto;overflow:hidden;}
+  html,body{margin:0;padding:0;height:100%;background:#0d0d14;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
+  #root{height:100vh;height:100dvh;max-width:480px;margin:0 auto;overflow:hidden;padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+  #root nav{padding-bottom:env(safe-area-inset-bottom);}
   *{box-sizing:border-box;}
   input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:#8b7ff7;cursor:pointer;}
   input[type="range"]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#8b7ff7;border:none;cursor:pointer;}
@@ -232,6 +241,7 @@ function App(){
   const [showNote,setShowNote]=useState(false);
   const [noteVal,setNoteVal]=useState("");
   const [detailOpen,setDetailOpen]=useState(null);
+  const [xfer,setXfer]=useState("");const [xmsg,setXmsg]=useState("");const [xarm,setXarm]=useState(false);
   const [form,setForm]=useState({goals:[],days:3,mins:70,level:null,bw:65,gender:null,injuries:[],injNote:"",place:null,equips:[],diets:[],dietNote:"",extra:"",bm:{}});
 
   useEffect(()=>{
@@ -550,6 +560,32 @@ function App(){
   }
 
   // ─── SETUP PAGE ───
+  function renderXfer(){
+    const data=JSON.stringify({s:schedule,l:logs});
+    const manual=m=>{setXfer(data);setXmsg(m);};
+    const copy=()=>{
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(data).then(()=>setXmsg("✅ 已複製。到新的地方貼在下方框框，再按「匯入」。"),()=>manual("無法自動複製，資料已放進下方框框，請全選後手動複製。"));}
+      else manual("資料已放進下方框框，請全選後手動複製。");
+    };
+    const imp=()=>{
+      let d;try{d=JSON.parse(xfer.trim());}catch(e){setXmsg("❌ 格式不對，請確認貼上的是完整資料。");return;}
+      if(!d||typeof d!=="object"||!("s" in d)||!("l" in d)){setXmsg("❌ 這不是健身課表的資料。");return;}
+      if(!xarm){setXarm(true);setXmsg("⚠️ 匯入會覆蓋這裡目前的所有資料，再按一次確認。");return;}
+      setSchedule(d.s||null);setLogs(d.l||{});save(d.s||null,d.l||{});setXarm(false);setXfer("");setXmsg("✅ 匯入完成。");setStep(1);
+    };
+    return(
+      <div style={{...card,margin:"12px 0 0"}}>
+        <div style={cardHead}><span style={{fontSize:18}}>📦</span><span style={{fontSize:14,fontWeight:700}}>資料轉移</span></div>
+        <div style={{padding:"13px 16px",display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{fontSize:12,color:C.mut,lineHeight:1.6}}>瀏覽器和主畫面 App 的資料是分開存的。先在舊的地方按「複製全部資料」，再到新的地方貼上並匯入。</div>
+          <button onClick={copy} style={{...btnBack,width:"100%"}}>📋 複製全部資料</button>
+          <textarea style={{...taStyle,minHeight:80,fontSize:12}} placeholder="在這裡貼上複製的資料" value={xfer} onChange={e=>{setXfer(e.target.value);setXarm(false);}}/>
+          <button onClick={imp} style={btnPrimary}>{xarm?"確認覆蓋並匯入":"匯入"}</button>
+          {xmsg&&<div style={{fontSize:12,color:C.txt,lineHeight:1.6}}>{xmsg}</div>}
+        </div>
+      </div>
+    );
+  }
   function renderSetup(){
     if(generating){
       return(
@@ -577,6 +613,7 @@ function App(){
             </div>
             <button onClick={()=>{setSchedule(DEFAULT_SCHEDULE);save(DEFAULT_SCHEDULE,logs);setDetailOpen(null);}} style={{...btnGrad,width:"100%",marginBottom:10}}>📖 套用一週四練課表（含注意事項＋動作分解）</button>
             <button onClick={()=>{setSchedule(null);save(null,logs);setStep(1);}} style={{...btnBack,width:"100%"}}>🔄 用 AI 重新建立課表</button>
+            {renderXfer()}
           </div>
         </>
       );
@@ -707,6 +744,7 @@ function App(){
               {navRow(true)}
             </>
           )}
+          {step===1&&<div style={{paddingBottom:24}}>{renderXfer()}</div>}
         </div>
       </>
     );
